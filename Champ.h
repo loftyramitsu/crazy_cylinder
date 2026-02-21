@@ -17,6 +17,7 @@ class Site{
 
     int x () const { return _x; }
     int y () const { return _y; }
+    int i () const { return _index;}
 };
 
 class Champ{
@@ -35,6 +36,9 @@ class Champ{
     }
 
     std::vector<double>& GetTab() {return tab;}
+
+    int Taille_hor() const {return nx;}
+    int Taille_vert() const {return ny;}
 
     Site site_index (int x, int y) const;
 
