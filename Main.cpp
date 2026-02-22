@@ -32,8 +32,8 @@ int main() {
     }
 
     std::cout << "Divergence du champ ux=x, uy=y :\n";
-    for(int y=0;y<ny;y++){
-        for(int x=0;x<nx;x++){
+    for(int y=1;y<ny-1;y++){
+        for(int x=1;x<nx-1;x++){
             double div = fluide.div_u(x,y);
             std::cout << div << "\t";
         }
@@ -51,8 +51,8 @@ int main() {
     }
 
     std::cout << "\nConvection du champ u=Ux^2+Uy^2 :\n";
-    for(int y=0;y<ny;y++){
-        for(int x=0;x<nx;x++){
+    for(int y=1;y<ny-1;y++){
+        for(int x=1;x<nx-1;x++){
             double conv = fluide.convection(u, x, y);
             std::cout << conv << "\t";
         }
@@ -75,8 +75,8 @@ int main() {
     }
 
     std::cout << "\nLaplacien du champ sin(pi*x)*sin(pi*y) :\n";
-    for(int y=0;y<ny;y++){
-        for(int x=0;x<nx;x++){
+    for(int y=1;y<ny-1;y++){
+        for(int x=1;x<nx-1;x++){
             double lap = Solveur::Laplacien(v, fluide.Grid(), x, y);
             std::cout << lap << "\t";
         }

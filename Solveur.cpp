@@ -25,7 +25,7 @@ namespace Solveur {
         if(g.Solide()[index]) return 0.;
 
         double tx_plus =g.Solide()[index+1] ? tab(x,y) : tab (x+1,y);
-        double tx_moins =g.Solide()[index+1] ? tab(x,y) : tab (x-1,y);
+        double tx_moins =g.Solide()[index-1] ? tab(x,y) : tab (x-1,y);
         double ty_plus =g.Solide()[index+nx] ? tab(x,y) : tab (x,y+1);
         double ty_moins =g.Solide()[index-nx] ? tab(x,y) : tab (x,y-1);
 
@@ -56,13 +56,13 @@ namespace Solveur {
         int nx = tab.Taille_hor();
         int ny = tab.Taille_vert();
         double dy = g.dY();
-        int index = x=y*nx;
+        int index = x+y*nx;
 
         if (y <= 0 || y >= ny-1) return 0.;
         if (g.Solide()[index]) return 0.;
 
         double ty_plus = g.Solide()[index+nx] ? tab(x,y) : tab(x,y+1);
-        double ty_moins= g.Solide()[index-ny] ? tab(x,y) : tab(x,y-1);
+        double ty_moins= g.Solide()[index-nx] ? tab(x,y) : tab(x,y-1);
 
         return (ty_plus - ty_moins) / (2*dy);
     }
@@ -95,7 +95,7 @@ namespace Solveur {
         if (g.Solide()[index]) return 0.;
 
         double ty_plus = g.Solide()[index+nx] ? tab(x,y) : tab(x,y+1);
-        double ty_moins= g.Solide()[index-ny] ? tab(x,y) : tab(x,y-1);
+        double ty_moins= g.Solide()[index-nx] ? tab(x,y) : tab(x,y-1);
 
 
         double u = uy(x, y);
