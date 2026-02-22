@@ -48,6 +48,8 @@ public:
 
     // Accès au masque de cellules solides
     const std::vector<bool>& Solide() const { return solide; }
+
+    void Affiche_cyl();
 };
 
 #endif

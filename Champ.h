@@ -47,9 +47,8 @@ public:
     // Convertit coordonnées x,y en Site (modulo pour conditions périodiques)
     Site site_index(int x, int y) const;
 
-private:
     // Convertit un index 1D en Site
-    Site site_xy(int index) const;
+    Site site_xy(int index);
 
 public:
     // Accès à une valeur par coordonnées

@@ -28,6 +28,9 @@ namespace Solveur {
 
     // Gradient upwind en Y selon la vitesse uy
     double GradY_upwind(const Champ& tab, const Champ& uy, Grille g, int x, int y);
+
+    //Solveur Poisson via méthode SOR
+    void PoissonSOR(Champ& phi, const Champ& rhs, const Grille& grid, double omega, int maxIter, double tol);
 }
 
 #endif
