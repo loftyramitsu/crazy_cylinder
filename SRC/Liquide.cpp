@@ -37,10 +37,11 @@ double Liquide::convection(const Champ& u, int x, int y) const {
 }
 
 void Liquide::SolveurPression(double eps, double dt, double omega, int Maxiter){
-    int nx= this->grid.NX();
-    int ny= this->grid.NY();
+    int nx = this->grid.NX();
+    int ny = this->grid.NY();
     Champ rhs(nx,ny);
 
+<<<<<<< HEAD:Liquide.cpp
     for(int x=1; x<nx-1; x++){
         for(int y=1; y<ny-1; y++){
             rhs(x,y)= (rho_l/dt)*(*this).div_u_star(x,y);
@@ -79,3 +80,13 @@ void Liquide::calc_tot_U_star(double dt){
 
 //void Liquide::Contrib(double dt){
 //}
+=======
+    for(int x = 0; x < nx; x++){
+        for(int y = 0; y < ny; y++){
+            rhs(x,y) = (rho_l/dt)*(*this).div_u_star(x,y);
+        }
+    }
+
+    PoissonSOR(this->p,rhs, this->grid, omega, Maxiter, eps);
+}
+>>>>>>> 38058892cc183d2e4c67267c7ac3e05c28da7abc:SRC/Liquide.cpp
