@@ -13,7 +13,7 @@ Site Champ::site_index(int x, int y) const {
 /*
  * Convertit un index 1D en Site
  */
-Site Champ::site_xy(int index) const {
+Site Champ::site_xy(int index) {
     int r = index % nx;
     int q = index / nx;
     return Site(index, r, q);
