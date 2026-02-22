@@ -50,7 +50,6 @@ public:
     // Convertit un index 1D en Site
     Site site_xy(int index);
 
-public:
     // Accès à une valeur par coordonnées
     double operator()(int x, int y) const;
     double& operator()(int x, int y);
