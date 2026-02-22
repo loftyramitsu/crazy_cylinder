@@ -37,13 +37,13 @@ double Liquide::convection(const Champ& u, int x, int y) const {
 }
 
 void Liquide::SolveurPression(double eps, double dt, double omega, int Maxiter){
-    int nx= this->grid.NX();
-    int ny= this->grid.NY();
+    int nx = this->grid.NX();
+    int ny = this->grid.NY();
     Champ rhs(nx,ny);
 
-    for(int x=0; x<nx; x++){
-        for(int y=0; y<ny; y++){
-            rhs(x,y)= (rho_l/dt)*(*this).div_u_star(x,y);
+    for(int x = 0; x < nx; x++){
+        for(int y = 0; y < ny; y++){
+            rhs(x,y) = (rho_l/dt)*(*this).div_u_star(x,y);
         }
     }
 

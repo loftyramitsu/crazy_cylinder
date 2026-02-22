@@ -31,16 +31,16 @@ public:
           ux(nx, ny), uy(nx, ny),
           p(nx, ny), ux_star(nx, ny), uy_star(nx, ny)
     {
-        for(int i=0; i<nx*ny; i++){
-            Site s=p.site_xy(i);
-            ux_star[s]=0.;
-            uy_star[s]=0.;
-            ux[s]=0.;
-            p[s]=p0;
-            if(s.x()==0 || s.x()==nx-1){
-                uy[s]=U;
+        for (int i = 0; i < nx*ny; i++){
+            Site s = p.site_xy(i);
+            ux_star[s] = 0.;
+            uy_star[s] = 0.;
+            ux[s] = 0.;
+            p[s] = p0;
+            if(s.x() == 0 || s.x() == nx-1){
+                uy[s] = U;
             } else {
-                uy[s]=0.;
+                uy[s] = 0.;
             }
         }
     }
