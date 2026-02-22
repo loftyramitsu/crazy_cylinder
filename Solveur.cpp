@@ -34,7 +34,7 @@ namespace Solveur {
 
     // Gradient central en Y
     double GradY_c(const Champ& tab, Grille g, int x, int y) {
-        int ny = tab.Taille_vert(); // corrigé pour grille rectangulaire
+        int ny = tab.Taille_vert();
         double dy = g.dY();
 
         if (y <= 0 || y >= ny-1) return 0.;
