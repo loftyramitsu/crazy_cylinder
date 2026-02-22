@@ -24,16 +24,16 @@ int main() {
     // ----------------------
     // 1️⃣ Test divergence
     // Champ simple : ux = x, uy = y
-    for(int x=0;x<nx;x++){
-        for(int y=0;y<ny;y++){
+    for (int x = 0; x < nx; x++){
+        for (int y = 0; y < ny; y++){
             fluide.Ux(x,y) = x * fluide.Grid().dX();
             fluide.Uy(x,y) = y * fluide.Grid().dY();
         }
     }
 
     std::cout << "Divergence du champ ux=x, uy=y :\n";
-    for(int y=1;y<ny-1;y++){
-        for(int x=1;x<nx-1;x++){
+    for (int y = 1; y < ny - 1; y++){
+        for (int x = 1; x < nx - 1; x++){
             double div = fluide.div_u(x,y);
             std::cout << div << "\t";
         }
@@ -44,15 +44,15 @@ int main() {
     // 2️⃣ Test convection
     // Champ u = ux^2 + uy^2
     Champ u(nx, ny);
-    for(int x=0;x<nx;x++){
-        for(int y=0;y<ny;y++){
+    for (int x = 0; x < nx; x++){
+        for (int y = 0; y < ny; y++){
             u(x,y) = fluide.Ux(x,y)*fluide.Ux(x,y) + fluide.Uy(x,y)*fluide.Uy(x,y);
         }
     }
 
     std::cout << "\nConvection du champ u=Ux^2+Uy^2 :\n";
-    for(int y=1;y<ny-1;y++){
-        for(int x=1;x<nx-1;x++){
+    for (int y = 1; y < ny-1; y++){
+        for (int x = 1; x < nx-1; x++){
             double conv = fluide.convection(u, x, y);
             std::cout << conv << "\t";
         }
@@ -66,8 +66,8 @@ int main() {
     double dx = lx / nx;
     double dy = ly / ny;
 
-    for(int x=0;x<nx;x++){
-        for(int y=0;y<ny;y++){
+    for (int x = 0; x < nx; x++){
+        for (int y = 0; y < ny; y++){
             double X = x*dx + dx/2.0; // centre de la cellule
             double Y = y*dy + dy/2.0;
             v(x,y) = sin(M_PI*X)*sin(M_PI*Y);
@@ -75,8 +75,8 @@ int main() {
     }
 
     std::cout << "\nLaplacien du champ sin(pi*x)*sin(pi*y) :\n";
-    for(int y=1;y<ny-1;y++){
-        for(int x=1;x<nx-1;x++){
+    for (int y = 1; y < ny-1; y++){
+        for (int x = 1; x < nx - 1; x++){
             double lap = Solveur::Laplacien(v, fluide.Grid(), x, y);
             std::cout << lap << "\t";
         }
