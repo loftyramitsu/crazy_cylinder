@@ -1,0 +1,77 @@
+#ifndef _LIQUIDE_H_
+#define _LIQUIDE_H_
+
+#include <vector>
+#include "Grille.h"
+#include "Champ.h"
+
+/*
+ * Classe Liquide
+ * Contient :
+ *  - ux, uy : vitesses
+ *  - p : pression
+ *  - ux_star, uy_star : champs intermédiaires
+ * Fournit des fonctions :
+ *  - div_u, div_u_star : divergence
+ *  - convection : terme convectif upwind
+ */
+class Liquide {
+private:
+    double visc;     // viscosité
+    double rho_l;    // densité
+    Grille grid;
+
+    Champ ux, uy, p;
+    Champ ux_star, uy_star;
+
+public:
+    Liquide(int nx, int ny, double lx, double ly, double nu, double rho, double cx, double radius, double U, double p0)
+        : visc(nu), rho_l(rho),
+          grid(nx, ny, lx, ly, cx, radius),
+          ux(nx, ny), uy(nx, ny),
+          p(nx, ny), ux_star(nx, ny), uy_star(nx, ny)
+    {
+        for (int i = 0; i < nx*ny; i++){
+            Site s = p.site_xy(i);
+            ux_star[s] = 0.;
+            uy_star[s] = 0.;
+            ux[s] = 0.;
+            p[s] = p0;
+            if(s.x() == 0 || s.x() == nx-1){
+                uy[s] = U;
+            } else {
+                uy[s] = 0.;
+            }
+        }
+    }
+
+    // Accès aux champs
+    Champ& Ux() { return ux; }
+    double& Ux(int x, int y) { return ux(x, y); }
+
+    Champ& Uy() { return uy; }
+    double& Uy(int x, int y) { return uy(x, y); }
+
+    Champ& P() { return p; }
+    double& P(int x, int y) { return p(x, y); }
+
+    Champ& Ux_star() { return ux_star; }
+    double& Ux_star(int x, int y) { return ux_star(x, y); }
+
+    Champ& Uy_star() { return uy_star; }
+    double& Uy_star(int x, int y) { return uy_star(x, y); }
+
+    Grille Grid() const { return grid; }
+
+    // Divergence du champ de vitesse
+    double div_u(int x,int y) const;
+    double div_u_star(int x,int y) const;
+
+    // Terme convectif upwind
+    double convection(const Champ& u, int x, int y) const;
+
+    //Résolution eq Poisson pour la pression
+    void SolveurPression(double eps, double dt, double omega, int Maxiter);
+};
+
+#endif
