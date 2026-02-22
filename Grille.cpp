@@ -3,7 +3,6 @@
 
 /*
  * Remplit le tableau "solide" avec true si la cellule est à l'intérieur du cylindre
- * La conversion indices → coordonnées physiques est maintenant correcte
  */
 void Grille::SetBoolCylindre() {
     double cx = this->pos_x_cyl;  // position du centre en x (physique)
@@ -15,7 +14,6 @@ void Grille::SetBoolCylindre() {
             // distance en coordonnées physiques
             double ddx = x * dx - cx;
             double ddy = y * dy - cy;
-            // la condition ddx>=0 && ddy>=0 est conservée mais pas strictement nécessaire
             if(ddx >= 0 && ddy >= 0){
                 // cellule solide si à l'intérieur du cylindre
                 this->solide[x + y*Nx] = (ddx*ddx + ddy*ddy <= r*r);

@@ -7,7 +7,6 @@
 using namespace Solveur;
 
 /*
- * Divergence de u = (ux, uy)
  * div(u) = ∂ux/∂x + ∂uy/∂y
  * Utilise les gradients centraux
  */
@@ -28,7 +27,7 @@ double Liquide::div_u_star(int x,int y) const {
 
 /*
  * Terme convectif d'un champ u selon ux, uy (upwind)
- * u peut être ux, uy, ou p
+ * u peut être ux, uy
  * Retourne ux*dudx + uy*dudy
  */
 double Liquide::convection(Champ u, int x, int y) const {

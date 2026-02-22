@@ -6,7 +6,6 @@
 #include "Grille.h"
 
 /*
- * Namespace Solveur
  * Contient les opérateurs discrets pour calcul CFD 2D :
  *  - Laplacien
  *  - Gradient central
