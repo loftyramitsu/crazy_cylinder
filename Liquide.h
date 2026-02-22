@@ -72,6 +72,16 @@ public:
 
     //Résolution eq Poisson pour la pression
     void SolveurPression(double eps, double dt, double omega, int Maxiter);
+
+    //Calcul vitesse intermédiaire en un point x,y
+    void calc_ux_star(int x, int y, double dt);
+    void calc_uy_star(int x, int y, double dt);
+
+    //Calcul total de la vitesse intermédiaire
+    void calc_tot_U_star(double dt);
+
+    //calcul contribution temps t+dt
+    void Contrib(double dt);
 };
 
 #endif

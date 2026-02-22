@@ -41,11 +41,41 @@ void Liquide::SolveurPression(double eps, double dt, double omega, int Maxiter){
     int ny= this->grid.NY();
     Champ rhs(nx,ny);
 
-    for(int x=0; x<nx; x++){
-        for(int y=0; y<ny; y++){
+    for(int x=1; x<nx-1; x++){
+        for(int y=1; y<ny-1; y++){
             rhs(x,y)= (rho_l/dt)*(*this).div_u_star(x,y);
         }
     }
 
-    PoissonSOR(this->p,rhs, this->grid, omega, Maxiter, eps);
+    PoissonSOR((*this).P(),rhs, this->grid, omega, Maxiter, eps);
 }
+
+void Liquide::calc_ux_star(int x, int y, double dt){
+    double ConvecX=(*this).convection(this->ux,x,y);
+    double DifusX=this->visc*Laplacien(this->ux,this->grid,x,y);
+
+    (*this).Ux_star(x,y)=this->ux(x,y)+dt*(DifusX-ConvecX);
+
+}
+
+void Liquide::calc_uy_star(int x, int y, double dt){
+    double ConvecY=(*this).convection(this->uy,x,y);
+    double DifusY=this->visc*Laplacien(this->uy,this->grid,x,y);
+
+    (*this).Uy_star(x,y)=this->uy(x,y)+dt*(DifusY-ConvecY);
+
+}
+
+void Liquide::calc_tot_U_star(double dt){
+    int nx=(*this).Grid().NX();
+    int ny=(*this).Grid().NY();
+    for(int y=1; y<ny-1;y++){
+        for(int x=1; x<nx-1; x++){
+            (*this).calc_ux_star(x,y,dt);
+            (*this).calc_uy_star(x,y,dt);
+        }
+    }
+}
+
+//void Liquide::Contrib(double dt){
+//}
