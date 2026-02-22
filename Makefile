@@ -1,22 +1,33 @@
-CXXFLAGS= -Wall
+# Compilateur et options
+CXX = g++
+CXXFLAGS = -Wall -std=c++17
 
-sources= Grille.cpp Champ.cpp Liquide.cpp Solveur.cpp
-entetes= Grille.h Champ.h Liquide.h Solveur.h
-objets=${sources:.cpp=.o}
+# Sources et headers
+sources = Grille.cpp Champ.cpp Liquide.cpp Solveur.cpp
+entetes = Grille.h Champ.h Liquide.h Solveur.h
+objets = $(sources:.cpp=.o)
 
-%: %.o
-	$(LINK.cpp) -o $@ $^
+# Nom de l'exécutable
+TARGET = Projet
 
-Projet: $(objets)
-	$(LINK.cpp) -o $@ $^
+# Cible par défaut
+all: $(TARGET)
 
-###
+# Règle pour l'exécutable
+$(TARGET): $(objets)
+	$(CXX) $(CXXFLAGS) -o $@ $^
 
+# Règle générique pour compiler les .o
+%.o: %.cpp $(entetes)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Nettoyage des fichiers temporaires
 clean:
 	rm -f *~ *.o *.bak
 
-mrproper:
-	rm -f Projet
+mrproper: clean
+	rm -f $(TARGET)
 
+# Génération automatique des dépendances (optionnel)
 depend:
 	makedepend $(sources)
