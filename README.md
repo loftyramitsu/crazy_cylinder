@@ -30,6 +30,7 @@ Ce projet implémente un **solveur CFD 2D** pour simuler un fluide incompressibl
 - Calcul des gradients centraux et upwind pour stabiliser la convection.  
 - Calcul de divergence pour la projection incompressible.  
 - Base prête pour intégrer un solveur **SOR** pour la pression.  
+- Affichage de la simulation grâce à **OpenGL**
 
 ## Authors
 Jules Chamoy and Lofty Gauthier
