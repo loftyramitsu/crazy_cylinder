@@ -26,8 +26,8 @@ private:
 
 public:
     Liquide(int nx, int ny, double lx, double ly, double nu, double rho, double cx, double radius)
-        : grid(nx, ny, lx, ly, cx, radius),
-          visc(nu), rho_l(rho),
+        : visc(nu), rho_l(rho),
+          grid(nx, ny, lx, ly, cx, radius),
           ux(nx, ny), uy(nx, ny),
           p(nx, ny), ux_star(nx, ny), uy_star(nx, ny)
     {}

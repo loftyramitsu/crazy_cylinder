@@ -3,7 +3,7 @@ CXX = g++
 CXXFLAGS = -Wall -std=c++17
 
 # Sources et headers
-sources = Grille.cpp Champ.cpp Liquide.cpp Solveur.cpp
+sources = Main.cpp Grille.cpp Champ.cpp Liquide.cpp Solveur.cpp
 entetes = Grille.h Champ.h Liquide.h Solveur.h
 objets = $(sources:.cpp=.o)
 
