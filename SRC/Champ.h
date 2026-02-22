@@ -34,7 +34,7 @@ private:
 public:
     // Constructeur
     Champ(int _nx, int _ny) : nx(_nx), ny(_ny) {
-        tab = std::vector<double>(_nx*_ny);
+        tab = std::vector<double>(_nx * _ny);
     }
 
     // Accès au vecteur complet
