@@ -16,7 +16,7 @@
  *  - convection : terme convectif upwind
  */
 class Liquide {
-private:
+    private:
     double visc;     // viscosité
     double rho_l;    // densité
     Grille grid;
@@ -24,7 +24,7 @@ private:
     Champ ux, uy, p;
     Champ ux_star, uy_star;
 
-public:
+    public:
     Liquide(int nx, int ny, double lx, double ly, double nu, double rho, double cx, double radius, double U, double p0)
         : visc(nu), rho_l(rho),
           grid(nx, ny, lx, ly, cx, radius),
@@ -73,15 +73,31 @@ public:
     //Résolution eq Poisson pour la pression
     void SolveurPression(double eps, double dt, double omega, int Maxiter);
 
+    private:
+
     //Calcul vitesse intermédiaire en un point x,y
     void calc_ux_star(int x, int y, double dt);
     void calc_uy_star(int x, int y, double dt);
+
+    public:
 
     //Calcul total de la vitesse intermédiaire
     void calc_tot_U_star(double dt);
 
     //calcul contribution temps t+dt
     void Contrib(double dt);
+
+    private:
+
+    //calcul de la vitesse max dans une cellule pour ux ou uy
+    double vmax(char x);
+
+    public:
+
+    //calcul de la condition CFL de pas de temps
+    double CFL();
+
+    
 };
 
 #endif
