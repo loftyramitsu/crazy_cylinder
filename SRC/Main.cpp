@@ -30,14 +30,14 @@ int main() {
     double T=0.,Tmax=10;
     double dt;
 
-    double nu = 1.0, rho = 1.0;
+    double nu = 1e-6, rho = 1.0;
 
     double U = 0.5, p0 = 1e5;
 
     double cx = lx/2., radius = 0.4; 
 
     double eps = 1e-1;
-    double omega=1.7;
+    double omega=1/(2+sin(M_PI/ny));
     // Création du fluide
     Liquide fluide(nx, ny, lx, ly, nu, rho, cx, radius, U, p0);
 

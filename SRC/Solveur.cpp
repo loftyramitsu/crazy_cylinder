@@ -102,7 +102,7 @@ namespace Solveur {
         }
     }
 
-    //implémentation solveur SOR
+    //implémentation solveur SOR (sur relaxation)
     void PoissonSOR(Champ& phi, const Champ& rhs, const Grille& g, double omega, int maxiter, double tol){
         int nx = g.NX();
         int ny = g.NY();
@@ -130,6 +130,7 @@ namespace Solveur {
 
                     double phi_GS =((px_plus+px_moins)/(dx*dx) + (py_plus+py_moins)/(dy*dy) - rhs(x,y)) / coef;
 
+                    //calcul par sur-relaxation
                     double phi_new = (1. - omega)*phi_old + omega*phi_GS;
 
                     phi(x,y) = phi_new;
