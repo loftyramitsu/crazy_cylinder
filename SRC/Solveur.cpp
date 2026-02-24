@@ -10,7 +10,7 @@ using namespace std;
 namespace Solveur {
 
     // Laplacien discretisé avec différences centrales
-    double Laplacien(const Champ& tab, Grille g, int x, int y) {
+    double Laplacien(const Champ& tab, const Grille& g, int x, int y) {
         int nx = tab.Taille_hor();
         int ny = tab.Taille_vert();
         double dx = g.dX();
@@ -19,52 +19,52 @@ namespace Solveur {
         int index = x + y*nx;
 
         // bord → renvoie 0 pour éviter dépassement
-        if (x <= 0 || x >= nx-1 || y <= 0 || y >= ny-1) return 0.;
+        if (x <= 0 || x >= nx-1 || y <= 0 || y >= ny-1 || g.Solide()[index]) return 0.;
+        else {
+            double tx_plus = g.Solide()[index + 1] ? tab(x,y) : tab (x+1, y);
+            double tx_moins = g.Solide()[index - 1] ? tab(x,y) : tab (x-1, y);
+            double ty_plus = g.Solide()[index + nx] ? tab(x,y) : tab (x, y+1);
+            double ty_moins = g.Solide()[index - nx] ? tab(x,y) : tab (x, y-1);
 
-        // cylindre -> renvoie 0
-        if(g.Solide()[index]) return 0.;
+            double deriv_xx = (tx_plus + tx_moins - 2*tab(x, y)) / (dx*dx);
+            double deriv_yy = (ty_plus + ty_moins - 2*tab(x, y)) / (dy*dy);
 
-        double tx_plus = g.Solide()[index + 1] ? tab(x,y) : tab (x+1, y);
-        double tx_moins = g.Solide()[index - 1] ? tab(x,y) : tab (x-1, y);
-        double ty_plus = g.Solide()[index + nx] ? tab(x,y) : tab (x, y+1);
-        double ty_moins = g.Solide()[index - nx] ? tab(x,y) : tab (x, y-1);
+            return deriv_xx + deriv_yy;
+        }
 
-        double deriv_xx = (tx_plus + tx_moins - 2*tab(x, y)) / (dx*dx);
-        double deriv_yy = (ty_plus + ty_moins - 2*tab(x, y)) / (dy*dy);
-
-        return deriv_xx + deriv_yy;
+        
     }
 
     // Gradient central en X
-    double GradX_c(const Champ& tab, Grille g, int x, int y) {
+    double GradX_c(const Champ& tab, const Grille& g, int x, int y) {
         int nx = tab.Taille_hor();
         double dx = g.dX();
 
         int index = x + nx*y;
 
-        if (x <= 0 || x >= nx-1) return 0.;
-        if (g.Solide()[index]) return 0.;
+        if (x <= 0 || x >= nx-1 || g.Solide()[index]) return 0.;
+        else {
+            double tx_plus = g.Solide()[index + 1] ? tab(x,y) : tab(x+1, y);
+            double tx_moins = g.Solide()[index - 1] ? tab(x,y) : tab(x-1, y);
 
-        double tx_plus = g.Solide()[index + 1] ? tab(x,y) : tab(x+1, y);
-        double tx_moins = g.Solide()[index - 1] ? tab(x,y) : tab(x-1, y);
-
-        return (tx_plus - tx_moins) / (2*dx);
+            return (tx_plus - tx_moins) / (2*dx);
+        }
     }
 
     // Gradient central en Y
-    double GradY_c(const Champ& tab, Grille g, int x, int y) {
+    double GradY_c(const Champ& tab, const Grille& g, int x, int y) {
         int nx = tab.Taille_hor();
         int ny = tab.Taille_vert();
         double dy = g.dY();
         int index = x + y*nx;
 
-        if (y <= 0 || y >= ny-1) return 0.;
-        if (g.Solide()[index]) return 0.;
+        if (y <= 0 || y >= ny-1 || g.Solide()[index]) return 0.;
+        else {
+            double ty_plus = g.Solide()[index + nx] ? tab(x,y) : tab(x, y+1);
+            double ty_moins = g.Solide()[index - nx] ? tab(x,y) : tab(x, y-1);
 
-        double ty_plus = g.Solide()[index + nx] ? tab(x,y) : tab(x, y+1);
-        double ty_moins = g.Solide()[index - nx] ? tab(x,y) : tab(x, y-1);
-
-        return (ty_plus - ty_moins) / (2*dy);
+            return (ty_plus - ty_moins) / (2*dy);
+        }
     }
 
     // Gradient upwind en X selon ux
@@ -73,34 +73,33 @@ namespace Solveur {
         double dx = g.dX();
         int index = x + y*nx;
 
-        if (x <= 0 || x >= nx-1) return 0.;
-        if (g.Solide()[index]) return 0.;
+        if (x <= 0 || x >= nx-1 || g.Solide()[index]) return 0.;
+        else {
+            double tx_plus = g.Solide()[index + 1] ? tab(x,y) : tab(x+1, y);
+            double tx_moins = g.Solide()[index - 1] ? tab(x,y) : tab(x-1, y);
 
-        double tx_plus = g.Solide()[index + 1] ? tab(x,y) : tab(x+1, y);
-        double tx_moins = g.Solide()[index - 1] ? tab(x,y) : tab(x-1, y);
-
-        double u = ux(x, y);
-        if (u >= 0.) return (tab(x, y) - tx_moins) / dx;
-        else return (tx_plus - tab(x, y)) / dx;
+            double u = ux(x, y);
+            if (u >= 0.) return (tab(x, y) - tx_moins) / dx;
+            else return (tx_plus - tab(x, y)) / dx;
+        }
     }
 
     // Gradient upwind en Y selon uy
-    double GradY_upwind(const Champ& tab, const Champ& uy, Grille g, int x, int y) {
+    double GradY_upwind(const Champ& tab, const Champ& uy, const Grille& g, int x, int y) {
         int ny = tab.Taille_vert();
         int nx = tab.Taille_hor();
         double dy = g.dY();
         int index = x + y*nx;
 
-        if (y <= 0 || y >= ny - 1) return 0.;
-        if (g.Solide()[index]) return 0.;
+        if (y <= 0 || y >= ny-1 || g.Solide()[index]) return 0.;
+        else {
+            double ty_plus = g.Solide()[index + nx] ? tab(x, y) : tab(x, y+1);
+            double ty_moins = g.Solide()[index - nx] ? tab(x,y) : tab(x, y-1);
 
-        double ty_plus = g.Solide()[index + nx] ? tab(x, y) : tab(x, y+1);
-        double ty_moins = g.Solide()[index - nx] ? tab(x,y) : tab(x, y-1);
-
-
-        double u = uy(x, y);
-        if (u >= 0.) return (tab(x, y) - ty_moins) / dy;
-        else return (ty_plus - tab(x, y)) / dy;
+            double u = uy(x, y);
+            if (u >= 0.) return (tab(x, y) - ty_moins) / dy;
+            else return (ty_plus - tab(x, y)) / dy;
+        }
     }
 
     //implémentation solveur SOR
@@ -118,7 +117,7 @@ namespace Solveur {
             for(int x=1; x < nx-1; x++){
                 for(int y=1; y < ny-1; y++){
                     int index = x + y*nx;
-                    if(g.Solide()[index]) continue;
+                    if(x <= 0 || x >= nx-1 || y <= 0 || y >= ny-1 || g.Solide()[index]) continue;
 
                     double phi_old = phi(x,y);
 
