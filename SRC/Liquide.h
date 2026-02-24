@@ -37,10 +37,10 @@ class Liquide {
             uy_star[s] = 0.;
             ux[s] = 0.;
             p[s] = p0;
-            if(s.x() == 0 || s.x() == nx-1){
-                uy[s] = U;
-            } else {
+            if(grid.Solide()[i] || grid.Solide()[i+1] || grid.Solide()[i-1] || grid.Solide()[i+nx] || grid.Solide()[i-ny]){
                 uy[s] = 0.;
+            } else {
+                uy[s] = U;
             }
         }
     }
@@ -97,7 +97,8 @@ class Liquide {
     //calcul de la condition CFL de pas de temps
     double CFL();
 
-    
+    //condition limite:
+    void condi_lim(double U);
 };
 
 #endif

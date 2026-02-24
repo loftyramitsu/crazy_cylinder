@@ -74,9 +74,14 @@ void Liquide::calc_tot_U_star(double dt){
     int ny=(*this).Grid().NY();
     for(int y=0; y<ny;y++){
         for(int x=0; x<nx; x++){
-            if(this->grid.Solide()[x+y*nx]==false){
-                (*this).calc_ux_star(x,y,dt);
-                (*this).calc_uy_star(x,y,dt);
+            if(x <= 0 || x >= nx-1 || y <= 0 || y >= ny-1){
+                this->ux_star(x,y) = this->ux(x,y);
+                this->uy_star(x,y) = this->uy(x,y);
+            } else {
+                if(this->grid.Solide()[x+y*nx]==false){
+                    (*this).calc_ux_star(x,y,dt);
+                    (*this).calc_uy_star(x,y,dt);
+                }
             }
         }
     }
@@ -85,8 +90,8 @@ void Liquide::calc_tot_U_star(double dt){
 void Liquide::Contrib(double dt){
     int nx = this->grid.NX();
     int ny = this->grid.NY();
-    for(int y=1;y < ny; y++){
-        for(int x=0; x<nx ; x++){
+    for(int y=1;y < ny-1; y++){
+        for(int x=1; x<nx-1 ; x++){
             if(this->grid.Solide()[x+y*nx]==false){
                 double dpdx = GradX_c( (*this).P(),this->grid,x,y);
                 double dpdy = GradY_c( (*this).P(),this->grid,x,y);
@@ -164,4 +169,21 @@ double Liquide::CFL(){
     }
 
     return 0.99*newdt;
+}
+
+void Liquide::condi_lim(double U){
+    int nx = this->grid.NX();
+    int ny = this->grid.NY();
+    for(int i=0;i<nx*ny;i++){
+        Site s = this->p.site_xy(i);
+        std::vector<bool> S = this->grid.Solide();
+        if(s.x()==0 || s.x()== nx-1){
+            this->ux[s]=0.;
+            this->uy[s]=U;
+        }
+        if(S[i+1] || S[i-1] || S[i+nx] || S[i-nx]){
+            this->ux[s]=0.;
+            this->uy[s]=0.;
+        }
+    }
 }
