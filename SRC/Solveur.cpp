@@ -68,7 +68,7 @@ namespace Solveur {
     }
 
     // Gradient upwind en X selon ux
-    double GradX_upwind(const Champ& tab, const Champ& ux, Grille g, int x, int y) {
+    double GradX_upwind(const Champ& tab, const Champ& ux, const Grille& g, int x, int y) {
         int nx = tab.Taille_hor();
         double dx = g.dX();
         int index = x + y*nx;
