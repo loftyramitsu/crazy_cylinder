@@ -138,36 +138,11 @@ double Liquide::CFL(){
     double dt_x_visc= dx*dx/coef;
     double dt_y_visc= dy*dy/coef;
 
-    if (dt_x_inert >= dt_y_inert){
-        if (dt_y_visc >= dt_x_visc){
-            if (dt_y_inert >= dt_x_visc){
-                newdt = dt_x_visc;
-            } else {
-                newdt = dt_y_inert;
-            }
-        } else {
-            if (dt_y_inert >= dt_y_visc){
-                newdt = dt_y_visc;
-            } else {
-                newdt = dt_y_inert;
-            }
-        }
-    } else {
-        if (dt_y_visc >= dt_x_visc){
-            if (dt_x_inert >= dt_x_visc){
-                newdt = dt_x_visc;
-            } else {
-                newdt = dt_x_inert;
-            }
-        } else {
-            if (dt_x_inert >= dt_y_visc){
-                newdt = dt_y_visc;
-            } else {
-                newdt = dt_x_inert;
-            }
-        }
-    }
+    double dt_min_inert= std::min(dt_x_inert,dt_y_inert);
+    double dt_min_visc = std::min(dt_x_visc,dt_y_visc);
 
+    newdt=std::min(dt_min_inert,dt_min_visc);
+    
     return 0.99*newdt;
 }
 
