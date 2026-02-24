@@ -33,14 +33,25 @@ class Liquide {
     {
         for (int i = 0; i < nx*ny; i++){
             Site s = p.site_xy(i);
-            ux_star[s] = 0.;
-            uy_star[s] = 0.;
-            ux[s] = 0.;
-            p[s] = p0;
-            if(grid.Solide()[i] || grid.Solide()[i+1] || grid.Solide()[i-1] || grid.Solide()[i+nx] || grid.Solide()[i-ny]){
-                uy[s] = 0.;
-            } else {
+            int x=s.x();
+            int y=s.y();
+            if(x <= 0 || x >= nx-1 || y <= 0 || y >= ny-1){
+                ux_star[s] = 0.;
+                uy_star[s] = 0.;
+                ux[s] = 0.;
                 uy[s] = U;
+                p[s] = p0;
+            } else {
+                ux_star[s] = 0.;
+                uy_star[s] = 0.;
+                ux[s] = 0.;
+                uy[s] = U;
+                p[s] = p0;
+                if(grid.Solide()[i] || grid.Solide()[i+1] || grid.Solide()[i-1] || grid.Solide()[i+nx] || grid.Solide()[i-nx]){
+                    uy[s] = 0.;
+                } else {
+                    uy[s] = U;
+                }
             }
         }
     }

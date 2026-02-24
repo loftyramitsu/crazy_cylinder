@@ -177,13 +177,16 @@ void Liquide::condi_lim(double U){
     for(int i=0;i<nx*ny;i++){
         Site s = this->p.site_xy(i);
         std::vector<bool> S = this->grid.Solide();
-        if(s.x()==0 || s.x()== nx-1){
-            this->ux[s]=0.;
-            this->uy[s]=U;
-        }
-        if(S[i+1] || S[i-1] || S[i+nx] || S[i-nx]){
-            this->ux[s]=0.;
-            this->uy[s]=0.;
+        if(s.x() == 0 || s.x() == nx-1 || s.y() == 0 || s.y() == ny-1){
+            if(s.x()==0 || s.x()== nx-1){
+                this->ux[s]=0.;
+                this->uy[s]=U;
+            }
+        } else {
+            if(S[i+1] || S[i-1] || S[i+nx] || S[i-nx]){
+                this->ux[s]=0.;
+                this->uy[s]=0.;
+            }
         }
     }
 }
