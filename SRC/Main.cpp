@@ -16,7 +16,6 @@ using namespace std;
 int main() {
 	// Creation of the simulation
 	Simulation sim(800, 600, "Simulation cylindre");
-	sim.run();
 
 	// ----------------------
 	// Paramètres de la grille / fluide
@@ -36,20 +35,21 @@ int main() {
 	// Création du fluide
 	Liquide fluide(nx, ny, lx, ly, nu, rho, cx, radius, U, p0);
 
-	while(T<Tmax){
-		dt=fluide.CFL();
-		cout<<dt<<endl;
-		fluide.calc_tot_U_star(dt);
-		cout<<"u_star_check"<<endl;
-		fluide.SolveurPression(eps,dt,omega,1e3);
-		cout<<"solv_press"<<endl;
-		fluide.Contrib(dt);
-		cout<<"contrib_check"<<endl;
-		fluide.condi_lim(U);
-		cout<<"condi lim check"<<endl;
-		T+=dt;
-		cout<<T<<endl;
-	}
+//	while(T<Tmax){
+//		dt=fluide.CFL();
+//		cout<<dt<<endl;
+//		fluide.calc_tot_U_star(dt);
+//		cout<<"u_star_check"<<endl;
+//		fluide.SolveurPression(eps,dt,omega,1e3);
+//		cout<<"solv_press"<<endl;
+//		fluide.Contrib(dt);
+//		cout<<"contrib_check"<<endl;
+//		fluide.condi_lim(U);
+//		cout<<"condi lim check"<<endl;
+//		T+=dt;
+//		cout<<T<<endl;
+//	}
 
+	sim.run();
 	return 0;
 }
