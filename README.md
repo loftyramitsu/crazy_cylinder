@@ -23,6 +23,8 @@ Ce projet implémente un **solveur CFD 2D** pour simuler un fluide incompressibl
 
 Les relations entre ces classes se trouve dans `diagrams/uml_diagram.svg`.
 
+![diagrams/uml_diagram.svg](diagrams/uml_diagram.svg)
+
 ---
 
 ## Fonctionnalités principales

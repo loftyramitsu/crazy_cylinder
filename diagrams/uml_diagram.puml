@@ -100,6 +100,18 @@ __
 -uy_star : Champ
 -visc : double
 }
+class "gladGLversionStruct" as C_0014114407443099026821
+class C_0014114407443099026821 {
+__
++major : int
++minor : int
+}
+enum "khronos_boolean_enum_t" as C_0014616433944762754393
+enum C_0014616433944762754393 {
+KHRONOS_FALSE
+KHRONOS_TRUE
+KHRONOS_BOOLEAN_ENUM_FORCE_SIZE
+}
 class "GLFWvidmode" as C_0012846325683697150659
 class C_0012846325683697150659 {
 __
