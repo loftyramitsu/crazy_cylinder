@@ -14,26 +14,27 @@ using namespace std;
 #endif
 
 int main() {
-	// Creation of the simulation
-	Simulation sim(800, 600, "Simulation cylindre");
 
 	// ----------------------
 	// Paramètres de la grille / fluide
-	int nx = 100, ny = 100;
+	int nx = 1024, ny = 1024;
 	double lx = 1.0, ly = 15.0;
-	double T=0.,Tmax=10;
+	double T = 0., Tmax=10;
 	double dt;
 
 	double nu = 1e-6, rho = 1.0;
 
 	double U = 0.5, p0 = 1e5;
 
-	double cx = lx/2., radius = 0.4; 
+	double cx = lx/2., radius = 0.1; 
 
 	double eps = 1e-1;
 	double omega=1/(2+sin(M_PI/ny));
 	// Création du fluide
 	Liquide fluide(nx, ny, lx, ly, nu, rho, cx, radius, U, p0);
+	
+	// Creation of the simulation
+	Simulation sim(nx, ny, "Simulation cylindre", fluide);
 
 //	while(T<Tmax){
 //		dt=fluide.CFL();
