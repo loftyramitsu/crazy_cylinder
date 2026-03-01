@@ -1,0 +1,179 @@
+@startuml
+class "std::vector<double>" as C_0011328605021903071752
+class C_0011328605021903071752 {
+__
+}
+class "std::vector<bool>" as C_0002045887772729987855
+class C_0002045887772729987855 {
+__
+}
+class "Site" as C_0001423274317303257258
+class C_0001423274317303257258 {
++Site(int i, int x, int y) : void
++Site() = default : void
+..
++i() const : int
++x() const : int
++y() const : int
+__
+-_index : int
+-_x : int
+-_y : int
+}
+class "Champ" as C_0002403819096973212324
+class C_0002403819096973212324 {
++Champ(int _nx, int _ny) : void
+..
++operator()(int x, int y) const : double
++operator()(int x, int y) : double &
++operator[](Site s) const : double
++operator[](Site s) : double &
+..
++GetTab() : std::vector<double> &
++Taille_hor() const : int
++Taille_vert() const : int
++site_index(int x, int y) const : Site
++site_xy(int index) : Site
+__
+-nx : int
+-ny : int
+-tab : std::vector<double>
+}
+class "Grille" as C_0003792196203829448009
+class C_0003792196203829448009 {
++Grille(int nx, int ny, double lx, double ly, double cx, double radius = 0.) : void
+..
++Affiche_cyl() : void
++LX() const : double
++LY() const : double
++NX() const : int
++NY() const : int
+-SetBoolCylindre() : void
++Solide() const : const std::vector<bool> &
++dX() const : double
++dY() const : double
+__
+-Lx : double
+-Ly : double
+-Nx : int
+-Ny : int
+-dx : double
+-dy : double
+-pos_x_cyl : double
+-pos_y_cyl : double
+-radius_cyl : double
+-solide : std::vector<bool>
+}
+class "Liquide" as C_0011212354420224549405
+class C_0011212354420224549405 {
++Liquide(int nx, int ny, double lx, double ly, double nu, double rho, double cx, double radius, double U, double p0) : void
+..
++CFL() : double
++Contrib(double dt) : void
++Grid() const : Grille
++P() : Champ &
++P(int x, int y) : double &
++SolveurPression(double eps, double dt, double omega, int Maxiter) : void
++Ux(int x, int y) : double &
++Ux() : Champ &
++Ux_star() : Champ &
++Ux_star(int x, int y) : double &
++Uy() : Champ &
++Uy(int x, int y) : double &
++Uy_star(int x, int y) : double &
++Uy_star() : Champ &
++calc_tot_U_star(double dt) : void
+-calc_ux_star(int x, int y, double dt) : void
+-calc_uy_star(int x, int y, double dt) : void
++condi_lim(double U) : void
++convection(const Champ & u, int x, int y) const : double
++div_u(int x, int y) const : double
++div_u_star(int x, int y) const : double
+-vmax(char x) : double
+__
+-grid : Grille
+-p : Champ
+-rho_l : double
+-ux : Champ
+-ux_star : Champ
+-uy : Champ
+-uy_star : Champ
+-visc : double
+}
+class "GLFWvidmode" as C_0012846325683697150659
+class C_0012846325683697150659 {
+__
++blueBits : int
++greenBits : int
++height : int
++redBits : int
++refreshRate : int
++width : int
+}
+class "GLFWgammaramp" as C_0004723036958785887512
+class C_0004723036958785887512 {
+__
++blue : unsigned short *
++green : unsigned short *
++red : unsigned short *
++size : unsigned int
+}
+class "GLFWimage" as C_0011632469852842890284
+class C_0011632469852842890284 {
+__
++height : int
++pixels : unsigned char *
++width : int
+}
+class "GLFWgamepadstate" as C_0003272539664815394773
+class C_0003272539664815394773 {
+__
++axes : float[6]
++buttons : unsigned char[15]
+}
+class "GLFWallocator" as C_0001863522309830244082
+class C_0001863522309830244082 {
+__
++allocate : GLFWallocatefun
++deallocate : GLFWdeallocatefun
++reallocate : GLFWreallocatefun
++user : void *
+}
+class "_cl_context" as C_0005505353034777529899
+class C_0005505353034777529899 {
+__
+}
+class "__GLsync" as C_0005656535728663299924
+class C_0005656535728663299924 {
+__
+}
+class "GLFWwindow" as C_0008434725962297335764
+class C_0008434725962297335764 {
+__
+}
+class "GLFWcursor" as C_0010724029348525148739
+class C_0010724029348525148739 {
+__
+}
+class "GLFWmonitor" as C_0013121967087840993840
+class C_0013121967087840993840 {
+__
+}
+class "_cl_event" as C_0016742860404031477541
+class C_0016742860404031477541 {
+__
+}
+C_0001423274317303257258 <.. C_0002403819096973212324 : +<<friend>>
+C_0002403819096973212324 ..> C_0001423274317303257258
+C_0002403819096973212324 o-- C_0011328605021903071752 : -tab
+C_0003792196203829448009 o-- C_0002045887772729987855 : -solide
+C_0011212354420224549405 o-- C_0003792196203829448009 : -grid
+C_0011212354420224549405 o-- C_0002403819096973212324 : -ux
+C_0011212354420224549405 o-- C_0002403819096973212324 : -uy
+C_0011212354420224549405 o-- C_0002403819096973212324 : -p
+C_0011212354420224549405 o-- C_0002403819096973212324 : -ux_star
+C_0011212354420224549405 o-- C_0002403819096973212324 : -uy_star
+
+'Generated with clang-uml, version 0.6.2
+'LLVM version Ubuntu clang version 15.0.7
+@enduml

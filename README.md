@@ -21,6 +21,8 @@ Ce projet implémente un **solveur CFD 2D** pour simuler un fluide incompressibl
 - **Solveur**  
   Fonctions pour calculer le Laplacien, les gradients centraux et upwind, nécessaires pour résoudre les équations de Navier-Stokes.
 
+Les relations entre ces classes se trouve dans `diagrams/uml_diagram.svg`.
+
 ---
 
 ## Fonctionnalités principales
