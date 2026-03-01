@@ -1,5 +1,4 @@
-#ifndef _GRILLE_H_
-#define _GRILLE_H_
+#pragma once
 
 #include <vector>
 
@@ -52,4 +51,3 @@ public:
     void Affiche_cyl();
 };
 
-#endif

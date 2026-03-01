@@ -1,5 +1,4 @@
-#ifndef _CHAMP_H_
-#define _CHAMP_H_
+#pragma once
 
 #include <vector>
 
@@ -59,4 +58,3 @@ public:
     double& operator[](Site s);
 };
 
-#endif

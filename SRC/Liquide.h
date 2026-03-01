@@ -1,5 +1,4 @@
-#ifndef _LIQUIDE_H_
-#define _LIQUIDE_H_
+#pragma once
 
 #include <vector>
 #include "Grille.h"
@@ -112,4 +111,3 @@ class Liquide {
     void condi_lim(double U);
 };
 
-#endif
