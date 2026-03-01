@@ -7,9 +7,19 @@ target_sources(Projet
 	PRIVATE
 		Main.cpp
 		${OTHER_SOURCES}
+		../DEP/GLAD/src/glad.c
 	)
 
 target_include_directories(Projet
 	PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}
+		../DEP/GLAD/include
 	)
+
+target_link_libraries(Projet
+	PRIVATE
+		glfw
+		OpenGL::GL
+	)
+
+
