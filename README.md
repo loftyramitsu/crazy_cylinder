@@ -38,7 +38,7 @@ Ce projet implémente un **solveur CFD 2D** pour simuler un fluide incompressibl
 Ce projet utilise `cmake` ≥ 3.23. Pour le compiler, se placer dans à la racine du projet, puis :
 - `cmake -B build/`
 - `cmake --build build/`
-L'exécutable se trouve alors dans `build/SRC/`.
+L'exécutable se trouve alors dans `build/SRC/`. Pour recompiler complètement, supprimer le dossier `build/` et recommencer.
 
 ## Authors
 Jules Chamoy and Lofty Gauthier
