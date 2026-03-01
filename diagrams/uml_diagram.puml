@@ -7,6 +7,10 @@ class "std::vector<bool>" as C_0002045887772729987855
 class C_0002045887772729987855 {
 __
 }
+class "std::string" as C_0001275076681856179721
+class C_0001275076681856179721 {
+__
+}
 class "Site" as C_0001423274317303257258
 class C_0001423274317303257258 {
 +Site(int i, int x, int y) : void
@@ -151,6 +155,21 @@ __
 +reallocate : GLFWreallocatefun
 +user : void *
 }
+class "Simulation" as C_0009672375814248942351
+class C_0009672375814248942351 {
++Simulation(int width, int height, const std::string & title) : void
++~Simulation() : void
+..
++initGL() : bool
+-processInput() : void
+-render() : void
++run() : void
+__
+-my_height : int
+-my_title : std::string
+-my_width : int
+-my_window : GLFWwindow *
+}
 class "_cl_context" as C_0005505353034777529899
 class C_0005505353034777529899 {
 __
@@ -185,6 +204,8 @@ C_0011212354420224549405 o-- C_0002403819096973212324 : -uy
 C_0011212354420224549405 o-- C_0002403819096973212324 : -p
 C_0011212354420224549405 o-- C_0002403819096973212324 : -ux_star
 C_0011212354420224549405 o-- C_0002403819096973212324 : -uy_star
+C_0009672375814248942351 o-- C_0001275076681856179721 : -my_title
+C_0009672375814248942351 --> C_0008434725962297335764 : -my_window
 
 'Generated with clang-uml, version 0.6.2
 'LLVM version Ubuntu clang version 15.0.7

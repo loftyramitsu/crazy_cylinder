@@ -1,5 +1,4 @@
-#ifndef _SOLVEUR_H_
-#define _SOLVEUR_H_
+#pragma once
 
 #include <vector>
 #include "Champ.h"
@@ -33,4 +32,3 @@ namespace Solveur {
     void PoissonSOR(Champ& phi, const Champ& rhs, const Grille& grid, double omega, int maxIter, double tol);
 }
 
-#endif

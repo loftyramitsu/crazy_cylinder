@@ -5,53 +5,51 @@
 #include "Champ.h"
 #include "Liquide.h"
 #include "Solveur.h"
+#include "Simulation.h"
 
 using namespace std;
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
-const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 800;
-const int GRID_SIZE = 128;
-
 int main() {
-    // ----------------------
-    // Paramètres de la grille / fluide
-    int nx = 100, ny = 100;
-    double lx = 1.0, ly = 15.0;
-    double T=0.,Tmax=10;
-    double dt;
+	// Creation of the simulation
+	Simulation sim(800, 600, "Simulation cylindre");
+	sim.run();
 
-    double nu = 1e-6, rho = 1.0;
+	// ----------------------
+	// Paramètres de la grille / fluide
+	int nx = 100, ny = 100;
+	double lx = 1.0, ly = 15.0;
+	double T=0.,Tmax=10;
+	double dt;
 
-    double U = 0.5, p0 = 1e5;
+	double nu = 1e-6, rho = 1.0;
 
-    double cx = lx/2., radius = 0.4; 
+	double U = 0.5, p0 = 1e5;
 
-    double eps = 1e-1;
-    double omega=1/(2+sin(M_PI/ny));
-    // Création du fluide
-    Liquide fluide(nx, ny, lx, ly, nu, rho, cx, radius, U, p0);
+	double cx = lx/2., radius = 0.4; 
 
-    while(T<Tmax){
-        dt=fluide.CFL();
-        cout<<dt<<endl;
-        fluide.calc_tot_U_star(dt);
-        cout<<"u_star_check"<<endl;
-        fluide.SolveurPression(eps,dt,omega,1e3);
-        cout<<"solv_press"<<endl;
-        fluide.Contrib(dt);
-        cout<<"contrib_check"<<endl;
-        fluide.condi_lim(U);
-        cout<<"condi lim check"<<endl;
-        T+=dt;
-        cout<<T<<endl;
-    }
+	double eps = 1e-1;
+	double omega=1/(2+sin(M_PI/ny));
+	// Création du fluide
+	Liquide fluide(nx, ny, lx, ly, nu, rho, cx, radius, U, p0);
 
-    return 0;
+	while(T<Tmax){
+		dt=fluide.CFL();
+		cout<<dt<<endl;
+		fluide.calc_tot_U_star(dt);
+		cout<<"u_star_check"<<endl;
+		fluide.SolveurPression(eps,dt,omega,1e3);
+		cout<<"solv_press"<<endl;
+		fluide.Contrib(dt);
+		cout<<"contrib_check"<<endl;
+		fluide.condi_lim(U);
+		cout<<"condi lim check"<<endl;
+		T+=dt;
+		cout<<T<<endl;
+	}
+
+	return 0;
 }
