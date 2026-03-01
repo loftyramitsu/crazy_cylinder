@@ -32,5 +32,13 @@ Ce projet implémente un **solveur CFD 2D** pour simuler un fluide incompressibl
 - Base prête pour intégrer un solveur **SOR** pour la pression.  
 - Affichage de la simulation grâce à **OpenGL**
 
+--- 
+
+## Compilation du projet
+Ce projet utilise `cmake` ≥ 3.23. Pour le compiler, se placer dans à la racine du projet, puis :
+- `cmake -B build/`
+- `cmake --build build/`
+L'exécutable se trouve alors dans `build/SRC/`.
+
 ## Authors
 Jules Chamoy and Lofty Gauthier
