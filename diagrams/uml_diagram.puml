@@ -7,6 +7,10 @@ class "std::vector<bool>" as C_0002045887772729987855
 class C_0002045887772729987855 {
 __
 }
+class "std::vector<unsigned char>" as C_0009908137448451672034
+class C_0009908137448451672034 {
+__
+}
 class "std::string" as C_0001275076681856179721
 class C_0001275076681856179721 {
 __
@@ -54,6 +58,7 @@ class C_0003792196203829448009 {
 +NY() const : int
 -SetBoolCylindre() : void
 +Solide() const : const std::vector<bool> &
++SolideTexture() const : const std::vector<unsigned char> &
 +dX() const : double
 +dY() const : double
 __
@@ -67,6 +72,7 @@ __
 -pos_y_cyl : double
 -radius_cyl : double
 -solide : std::vector<bool>
+-solide_texture : std::vector<unsigned char>
 }
 class "Liquide" as C_0011212354420224549405
 class C_0011212354420224549405 {
@@ -155,9 +161,17 @@ __
 +reallocate : GLFWreallocatefun
 +user : void *
 }
+class "Shader" as C_0014899929896336503560
+class C_0014899929896336503560 {
++Shader(const std::string & vertexPath, const std::string & fragmentPath) : void
+..
++use() const : void
+__
++ID : unsigned int
+}
 class "Simulation" as C_0009672375814248942351
 class C_0009672375814248942351 {
-+Simulation(int width, int height, const std::string & title) : void
++Simulation(int width, int height, const std::string & title, Liquide & fluideRef) : void
 +~Simulation() : void
 ..
 +initGL() : bool
@@ -165,10 +179,15 @@ class C_0009672375814248942351 {
 -render() : void
 +run() : void
 __
+-fluide : Liquide &
+-gridShader : Shader *
+-gridTexture : unsigned int
 -my_height : int
 -my_title : std::string
 -my_width : int
 -my_window : GLFWwindow *
+-quadVAO : unsigned int
+-quadVBO : unsigned int
 }
 class "_cl_context" as C_0005505353034777529899
 class C_0005505353034777529899 {
@@ -198,14 +217,18 @@ C_0001423274317303257258 <.. C_0002403819096973212324 : +<<friend>>
 C_0002403819096973212324 ..> C_0001423274317303257258
 C_0002403819096973212324 o-- C_0011328605021903071752 : -tab
 C_0003792196203829448009 o-- C_0002045887772729987855 : -solide
+C_0003792196203829448009 o-- C_0009908137448451672034 : -solide_texture
 C_0011212354420224549405 o-- C_0003792196203829448009 : -grid
 C_0011212354420224549405 o-- C_0002403819096973212324 : -ux
 C_0011212354420224549405 o-- C_0002403819096973212324 : -uy
 C_0011212354420224549405 o-- C_0002403819096973212324 : -p
 C_0011212354420224549405 o-- C_0002403819096973212324 : -ux_star
 C_0011212354420224549405 o-- C_0002403819096973212324 : -uy_star
+C_0014899929896336503560 ..> C_0001275076681856179721
 C_0009672375814248942351 o-- C_0001275076681856179721 : -my_title
 C_0009672375814248942351 --> C_0008434725962297335764 : -my_window
+C_0009672375814248942351 --> C_0014899929896336503560 : -gridShader
+C_0009672375814248942351 --> C_0011212354420224549405 : -fluide
 
 'Generated with clang-uml, version 0.6.2
 'LLVM version Ubuntu clang version 15.0.7
