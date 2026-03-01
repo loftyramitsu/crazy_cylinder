@@ -44,5 +44,11 @@ Ce projet utilise `cmake` ≥ 3.23. Pour le compiler, se placer dans à la racin
 - `cmake --build build/`
 L'exécutable se trouve alors dans `build/SRC/`. Pour recompiler complètement, supprimer le dossier `build/` et recommencer.
 
+---
+## Diagramme UML
+Pour générer automatiquement le diagramme UML du projet :
+- `clang-uml` à la racine du projet
+- `plantuml -tsvg diagrams/*.puml` à la racine aussi
+
 ## Authors
 Jules Chamoy and Lofty Gauthier
