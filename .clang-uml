@@ -1,0 +1,9 @@
+# Change to directory where compile_commands.json is
+compilation_database_dir: build
+# Change to directory where diagram should be written
+output_directory: diagrams
+diagrams:
+  uml_diagram:
+    type: class
+    glob:
+      - SRC/*.cpp
