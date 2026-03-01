@@ -12,42 +12,45 @@
  *  - cylindre : position, rayon et masque solide
  */
 class Grille {
-private:
-    int Nx, Ny;          // nombre de cellules
-    double Lx, Ly;       // dimensions physiques
-    double dx, dy;       // pas en x et y
+	private:
+		int Nx, Ny;          // nombre de cellules
+		double Lx, Ly;       // dimensions physiques
+		double dx, dy;       // pas en x et y
 
-    // Cylindre solide
-    double pos_x_cyl;    
-    double pos_y_cyl;
-    double radius_cyl;
-    std::vector<bool> solide;  // true si la cellule est dans le cylindre
+		// Cylindre solide
+		double pos_x_cyl;    
+		double pos_y_cyl;
+		double radius_cyl;
+		std::vector<bool> solide;  // true si la cellule est dans le cylindre
+		std::vector<unsigned char> solide_texture;
 
-    // Initialise le masque "solide" selon le cylindre
-    void SetBoolCylindre();
+		// Initialise le masque "solide" selon le cylindre
+		void SetBoolCylindre();
 
-public:
-    // Constructeur
-    Grille(int nx, int ny, double lx, double ly, double cx, double radius=0.)
-        : Nx(nx), Ny(ny), Lx(lx), Ly(ly), pos_x_cyl(cx), radius_cyl(radius), solide(nx*ny, false)
-    {
-        dx = lx / nx;
-        dy = ly / ny;
-        pos_y_cyl = ly / 2.;   // centre en y
-        SetBoolCylindre();     // remplit le masque solide
-    }
+	public:
+		// Constructeur
+		Grille(int nx, int ny, double lx, double ly, double cx, double radius=0.)
+			: Nx(nx), Ny(ny), Lx(lx), Ly(ly), pos_x_cyl(cx), radius_cyl(radius), solide(nx*ny, false), solide_texture(nx*ny, 0)
+		{
+			dx = lx / nx;
+			dy = ly / ny;
+			pos_y_cyl = ly / 2.;   // centre en y
+			SetBoolCylindre();     // remplit le masque solide
+		}
 
-    // Getters
-    int NX() const { return Nx; }
-    int NY() const { return Ny; }
-    double LX() const { return Lx; }
-    double LY() const { return Ly; }
-    double dX() const { return dx; }
-    double dY() const { return dy; }
+		// Getters
+		int NX() const { return Nx; }
+		int NY() const { return Ny; }
+		double LX() const { return Lx; }
+		double LY() const { return Ly; }
+		double dX() const { return dx; }
+		double dY() const { return dy; }
 
-    // Accès au masque de cellules solides
-    const std::vector<bool>& Solide() const { return solide; }
+		// Accès au masque de cellules solides
+		const std::vector<bool>& Solide() const { return solide; }
 
-    void Affiche_cyl();
+		const std::vector<unsigned char>& SolideTexture() const { return solide_texture; }
+
+		void Affiche_cyl();
 };
 
