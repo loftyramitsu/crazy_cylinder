@@ -1,0 +1,34 @@
+# Python
+#__pycache__/
+#*.py[cod]
+#*$py.class
+
+# virtualenv
+#venv/
+#.env/
+
+# distribution
+build/
+#dist/
+#*.egg-info/
+
+# notebooks
+.ipynb_checkpoints/
+
+# logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# editors
+.vscode/
+.idea/
+
+# LaTeX
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
