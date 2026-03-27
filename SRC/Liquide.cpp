@@ -50,7 +50,7 @@ void Liquide::SolveurPression(double eps, double dt, double omega, int Maxiter){
         }
     }
 
-    PoissonSOR(this->p,rhs, this->grid, omega, Maxiter, eps);
+    PoissonMultigrid(this->p, rhs, this->grid, Maxiter, eps, omega);
 }
 
 void Liquide::calc_ux_star(int x, int y, double dt){

@@ -30,5 +30,20 @@ namespace Solveur {
 
     //Solveur Poisson via méthode SOR
     void PoissonSOR(Champ& phi, const Champ& rhs, const Grille& grid, double omega, int maxIter, double tol);
+
+    // Restreint un champ fin vers un champ grossier (injection ou moyenne)
+    Champ Restriction(const Champ& fine);
+
+    // Prolonge un champ grossier vers un champ fin (interpolation bilinéaire)
+    Champ Prolongation(const Champ& coarse, int nx_fine, int ny_fine);
+
+    // Calcule le résidu r = rhs - L(phi)
+    Champ Residuel(const Champ& phi, const Champ& rhs, const Grille& g);
+
+    // V-cycle multigrid
+    void VCycle(Champ& phi, const Champ& rhs, const Grille& g, int niveau, int max_niveaux, int nu1, int nu2, double omega);
+
+    // Remplace PoissonSOR pour l'appel depuis Liquide
+    void PoissonMultigrid(Champ& phi, const Champ& rhs, const Grille& g, int maxiter, double tol, double omega, int max_niveaux=1, int nu1=50, int nu2=50);
 }
 

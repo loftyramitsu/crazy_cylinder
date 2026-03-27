@@ -45,6 +45,8 @@ class Grille {
 		double LY() const { return Ly; }
 		double dX() const { return dx; }
 		double dY() const { return dy; }
+		double PosXCyl() const { return pos_x_cyl; }
+		double RadiusCyl() const { return radius_cyl; }
 
 		// Accès au masque de cellules solides
 		const std::vector<bool>& Solide() const { return solide; }
