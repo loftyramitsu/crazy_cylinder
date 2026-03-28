@@ -36,6 +36,8 @@ int main() {
 	// Creation of the simulation
 	Simulation sim(nx, ny, "Simulation cylindre", fluide);
 
+	sim.run();
+	
 	while(T<Tmax){
 		dt=fluide.CFL();
 		cout<<dt<<endl;
@@ -51,6 +53,5 @@ int main() {
 		cout<<T<<endl;
 	}
 
-	sim.run();
 	return 0;
 }
