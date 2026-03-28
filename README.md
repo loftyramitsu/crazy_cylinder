@@ -3,14 +3,14 @@ This file will contain explanation of the different part of the code, and maybe 
 
 # CFD 2D – Simulation de fluide incompressible
 
-Ce projet implémente un **solveur CFD 2D** pour simuler un fluide incompressible autour d'un obstacle (cylindre) sur une grille rectangulaire. Le code est écrit en **C++** et utilise une architecture orientée objet pour la grille, les champs et le liquide.
+Ce projet implémente un **solveur CFD 2D** pour simuler un fluide incompressible autour d'un obstacle (cylindre) sur une grille rectangulaire. Le code est écrit en **C++** et utilise une architecture orientée objet pour la grille, les champs et le liquide. La simulation est visualisée en temps réel grâce à **OpenGL**, dans une fenêtre interactive tournant en parallèle du calcul physique.
 
 ---
 
 ## Structure du projet
 
 - **Grille**  
-  Gère la grille 2D, le pas de discrétisation, et l'obstacle circulaire via un masque de cellules solides.
+  Gère la grille 2D, le pas de discrétisation, et l'obstacle circulaire via un masque de cellules solides. Calcule deux masques : un masque physique (`solide`) pour le solveur, et un masque texturé (`solide_texture`) pour l'affichage OpenGL.
 
 - **Champ / Site**  
   Représente les champs scalaires ou vectoriels (vitesse, pression), avec accès facile par coordonnées `(x, y)` ou index 1D via `Site`.
@@ -20,6 +20,12 @@ Ce projet implémente un **solveur CFD 2D** pour simuler un fluide incompressibl
 
 - **Solveur**  
   Fonctions pour calculer le Laplacien, les gradients centraux et upwind, nécessaires pour résoudre les équations de Navier-Stokes.
+
+- **Simulation**  
+  Gère la fenêtre OpenGL et le rendu en temps réel. Le calcul physique tourne dans un **thread séparé** (`simulationLoop`) pour ne pas bloquer l'affichage. Un mutex protège les données partagées lors des courtes copies vers le buffer de rendu.
+
+- **Shader**  
+  Charge et compile les shaders GLSL depuis le dossier `SHADERS/`. Les fichiers `grid.vert` et `grid.frag` gèrent respectivement la géométrie du quad plein écran et le coloriage des cellules (solide / fluide).
 
 - **Config**  
   Lecteur de fichier INI sans dépendance externe. Charge les paramètres physiques et numériques depuis `config.ini` au démarrage.
@@ -35,24 +41,36 @@ Les relations entre ces classes se trouvent dans `diagrams/uml_diagram.svg`.
 
 ## Fonctionnalités principales
 
-- Simulation de fluide autour d'un cylindre (obstacle solide).  
-- Accès aux champs modifiable ou en lecture seule via opérateurs `(x, y)` ou `Site`.  
-- Calcul des gradients centraux et upwind pour stabiliser la convection.  
-- Calcul de divergence pour la projection incompressible.  
+- Simulation de fluide autour d'un cylindre (obstacle solide).
+- Accès aux champs modifiable ou en lecture seule via opérateurs `(x, y)` ou `Site`.
+- Calcul des gradients centraux et upwind pour stabiliser la convection.
+- Calcul de divergence pour la projection incompressible.
 - Solveur **SOR multigrid** pour la pression.
 - Pas de temps adaptatif vérifiant la condition **CFL**.
-- Affichage de la simulation grâce à **OpenGL**.
+- Affichage en temps réel grâce à **OpenGL** (quad plein écran + texture mise à jour dynamiquement).
+- Calcul physique dans un **thread séparé** pour garder la fenêtre réactive.
 - Paramètres configurables via un fichier **INI** sans recompilation.
 - Export des champs en **CSV** pour post-traitement.
 
---- 
+---
 
 ## Compilation du projet
-Ce projet utilise `cmake` ≥ 3.23. Pour le compiler, se placer à la racine du projet, puis :
-- `cmake -B build/`
-- `cmake --build build/`
+
+Ce projet utilise `cmake` ≥ 3.23 et requiert les dépendances suivantes :
+- **GLFW** : gestion de la fenêtre et des événements (inclus dans `DEP/GLFW/`)
+- **GLAD** : chargement des fonctions OpenGL (inclus dans `DEP/GLAD/`)
+- **OpenGL** : rendu graphique
+- **pthreads** : threading POSIX (ajouté automatiquement via `Threads::Threads`)
+
+Pour compiler, se placer à la racine du projet, puis :
+```bash
+cmake -B build/
+cmake --build build/
+```
 
 L'exécutable se trouve alors dans `build/SRC/`. Pour recompiler complètement, supprimer le dossier `build/` et recommencer.
+
+> **Note** : le dossier `SHADERS/` doit être accessible depuis le répertoire de travail au moment de l'exécution. Le `CMakeLists.txt` copie automatiquement ce dossier dans le répertoire de build via `file(COPY ...)`.
 
 ---
 
@@ -91,6 +109,19 @@ Toutes les clés ont une valeur par défaut dans le code : si une clé est absen
 ```bash
 ./Projet chemin/vers/autre_config.ini
 ```
+
+---
+
+## Affichage OpenGL
+
+La simulation s'affiche dans une fenêtre OpenGL en temps réel pendant le calcul. L'architecture repose sur deux threads :
+
+- **Thread principal** : gère la fenêtre GLFW, le rendu et les événements (touches clavier). Tourne à chaque frame sans blocage.
+- **Thread secondaire** (`simulationLoop`) : effectue les calculs physiques (CFD). Copie rapidement les données dans un buffer partagé sous mutex entre deux pas de temps.
+
+Le masque solide (cylindre) est chargé une seule fois dans une texture OpenGL au démarrage et n'est jamais modifié. Les cellules solides s'affichent en rouge, le fluide en noir.
+
+Appuyer sur **Échap** ferme la fenêtre et arrête proprement les deux threads.
 
 ---
 

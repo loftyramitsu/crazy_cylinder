@@ -7,19 +7,30 @@
 #include "Shader.h"
 #include <vector>
 
-class Simulation{
-	public :
-		Simulation(int width, int height, const std::string &title, Liquide& fluideRef);
+#include <thread>
+#include <atomic>
+#include <mutex>
+
+class Simulation {
+	public:
+		Simulation(int width, int height, const std::string& title, Liquide& fluideRef);
 		~Simulation();
 
-		void run();
+		// Lance la boucle OpenGL et intègre la simulation physique
+		// Tmax    : temps physique final
+		// U       : vitesse d'entrée (pour condi_lim)
+		// eps     : tolérance solveur pression
+		// omega   : paramètre SOR
+		// maxiter : itérations max solveur pression
+		void run(double Tmax, double U, double eps, double omega, int maxiter);
+
 		bool initGL();
 
-	private :
+	private:
 		int my_height;
 		int my_width;
 		std::string my_title;
-		GLFWwindow*  my_window;
+		GLFWwindow* my_window;
 		Shader* gridShader;
 		unsigned int quadVAO, quadVBO;
 		unsigned int gridTexture;
@@ -28,5 +39,17 @@ class Simulation{
 
 		void processInput();
 		void render();
+
+		std::thread simThread;
+		std::atomic<bool> running;
+		std::mutex dataMutex;
+
+
+		// Buffer de rendu séparé (copie légère pour OpenGL)
+		std::vector<float> renderBuffer;  // valeurs à afficher
+		std::atomic<bool> newFrameReady;  // flag : nouvelle donnée dispo
+
+		void simulationLoop(double Tmax, double U, double eps, double omega, int maxiter);
+
 
 };

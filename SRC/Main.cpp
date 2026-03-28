@@ -70,23 +70,24 @@ int main(int argc, char* argv[]) {
     Liquide fluide(nx, ny, lx, ly, nu, rho, cx, radius, U, p0);
     Simulation sim(nx, ny, "Simulation cylindre", fluide);
 
-    sim.run();
+    // Now, .run() contains the physical loop and the OpenGL loop
+    sim.run(Tmax, U, eps, omega, maxiter);
 
     // -------------------------------------------------------
     // Boucle temporelle
     // -------------------------------------------------------
-    double T = 0.;
-    while (T < Tmax) {
-        double dt = fluide.CFL();
-        std::cout << "T = " << T << "  dt = " << dt << "\n";
-
-        fluide.calc_tot_U_star(dt);
-        fluide.SolveurPression(eps, dt, omega, maxiter);
-        fluide.Contrib(dt);
-        fluide.condi_lim(U);
-
-        T += dt;
-    }
+//    double T = 0.;
+//    while (T < Tmax) {
+//        double dt = fluide.CFL();
+//        std::cout << "T = " << T << "  dt = " << dt << "\n";
+//
+//        fluide.calc_tot_U_star(dt);
+//        fluide.SolveurPression(eps, dt, omega, maxiter);
+//        fluide.Contrib(dt);
+//        fluide.condi_lim(U);
+//
+//        T += dt;
+//    }
 
     // -------------------------------------------------------
     // Export final des champs

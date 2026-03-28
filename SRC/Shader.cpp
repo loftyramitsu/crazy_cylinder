@@ -7,6 +7,10 @@
 static std::string readFile(const std::string& path)
 {
 	std::ifstream file(path);
+	if (!file.is_open()) {
+		std::cerr << "[SHADER ERROR] Impossible d'ouvrir : " << path << "\n";
+		return "";
+	}
 	std::stringstream buffer;
 	buffer << file.rdbuf();
 	return buffer.str();
