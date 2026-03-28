@@ -21,6 +21,9 @@ if(NOT OpenGL_FOUND)
 	message(FATAL_ERROR "Il semblerait que OpenGL ne soit pas installé sur cette machine, merci de réessayer après avoir installé une version récente d'OpenGl")
 endif()
 
+# ---> Threads needed
+find_package(Threads REQUIRED)
+
 # ---> Add SRC directory
 add_subdirectory(SRC)
 
