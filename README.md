@@ -3,14 +3,14 @@ This file will contain explanation of the different part of the code, and maybe 
 
 # CFD 2D – Simulation de fluide incompressible
 
-Ce projet implémente un **solveur CFD 2D** pour simuler un fluide incompressible autour d’un obstacle (cylindre) sur une grille rectangulaire. Le code est écrit en **C++** et utilise une architecture orientée objet pour la grille, les champs et le liquide.
+Ce projet implémente un **solveur CFD 2D** pour simuler un fluide incompressible autour d'un obstacle (cylindre) sur une grille rectangulaire. Le code est écrit en **C++** et utilise une architecture orientée objet pour la grille, les champs et le liquide.
 
 ---
 
 ## Structure du projet
 
 - **Grille**  
-  Gère la grille 2D, le pas de discrétisation, et l’obstacle circulaire via un masque de cellules solides.
+  Gère la grille 2D, le pas de discrétisation, et l'obstacle circulaire via un masque de cellules solides.
 
 - **Champ / Site**  
   Représente les champs scalaires ou vectoriels (vitesse, pression), avec accès facile par coordonnées `(x, y)` ou index 1D via `Site`.
@@ -21,7 +21,13 @@ Ce projet implémente un **solveur CFD 2D** pour simuler un fluide incompressibl
 - **Solveur**  
   Fonctions pour calculer le Laplacien, les gradients centraux et upwind, nécessaires pour résoudre les équations de Navier-Stokes.
 
-Les relations entre ces classes se trouve dans `diagrams/uml_diagram.svg`.
+- **Config**  
+  Lecteur de fichier INI sans dépendance externe. Charge les paramètres physiques et numériques depuis `config.ini` au démarrage.
+
+- **Export**  
+  Export des champs physiques (vitesse, pression) en fichiers CSV en fin de simulation.
+
+Les relations entre ces classes se trouvent dans `diagrams/uml_diagram.svg`.
 
 ![diagrams/uml_diagram.svg](diagrams/uml_diagram.svg)
 
@@ -29,22 +35,103 @@ Les relations entre ces classes se trouve dans `diagrams/uml_diagram.svg`.
 
 ## Fonctionnalités principales
 
-- Simulation de fluide autour d’un cylindre (obstacle solide).  
+- Simulation de fluide autour d'un cylindre (obstacle solide).  
 - Accès aux champs modifiable ou en lecture seule via opérateurs `(x, y)` ou `Site`.  
 - Calcul des gradients centraux et upwind pour stabiliser la convection.  
 - Calcul de divergence pour la projection incompressible.  
-- Base prête pour intégrer un solveur **SOR** pour la pression.  
-- Affichage de la simulation grâce à **OpenGL**
+- Solveur **SOR multigrid** pour la pression.
+- Pas de temps adaptatif vérifiant la condition **CFL**.
+- Affichage de la simulation grâce à **OpenGL**.
+- Paramètres configurables via un fichier **INI** sans recompilation.
+- Export des champs en **CSV** pour post-traitement.
 
 --- 
 
 ## Compilation du projet
-Ce projet utilise `cmake` ≥ 3.23. Pour le compiler, se placer dans à la racine du projet, puis :
+Ce projet utilise `cmake` ≥ 3.23. Pour le compiler, se placer à la racine du projet, puis :
 - `cmake -B build/`
 - `cmake --build build/`
+
 L'exécutable se trouve alors dans `build/SRC/`. Pour recompiler complètement, supprimer le dossier `build/` et recommencer.
 
 ---
+
+## Configuration (`config.ini`)
+
+Tous les paramètres physiques et numériques sont centralisés dans `config.ini` à la racine du projet. Le fichier est copié automatiquement dans le dossier de build par CMake.
+
+```ini
+[grille]
+nx     = 1024       ; nombre de cellules en x
+ny     = 1024       ; nombre de cellules en y
+lx     = 1.0        ; longueur physique en x (m)
+ly     = 15.0       ; longueur physique en y (m)
+
+[fluide]
+nu     = 1e-6       ; viscosité cinématique (m²/s)
+rho    = 1.0        ; masse volumique (kg/m³)
+U      = 0.5        ; vitesse d'entrée (m/s)
+p0     = 1e5        ; pression initiale (Pa)
+
+[cylindre]
+cx     = 0.5        ; position x du centre (m)
+radius = 0.0        ; rayon (m) — 0 = pas de cylindre
+
+[simulation]
+Tmax    = 2.0       ; temps physique final (s)
+eps     = 1e-1      ; tolérance du solveur de pression
+maxiter = 10        ; itérations max du solveur de pression
+
+[export]
+output_dir = output ; dossier de sortie des CSV
+```
+
+Toutes les clés ont une valeur par défaut dans le code : si une clé est absente, la simulation tourne quand même. Un chemin alternatif peut être passé en argument :
+
+```bash
+./Projet chemin/vers/autre_config.ini
+```
+
+---
+
+## Export CSV
+
+À la fin de la simulation, les champs sont exportés automatiquement dans le dossier `output_dir` défini dans `config.ini` :
+
+| Fichier  | Contenu                     |
+|----------|-----------------------------|
+| `ux.csv` | Composante x de la vitesse  |
+| `uy.csv` | Composante y de la vitesse  |
+| `p.csv`  | Champ de pression           |
+
+Chaque fichier contient les coordonnées physiques du centre de chaque cellule et la valeur du champ :
+
+```
+x,y,ux
+9.765625e-04,9.765625e-04,0.000000e+00
+...
+```
+
+### Visualisation avec Python
+
+```python
+import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.read_csv("output/uy.csv")
+nx, ny = 1024, 1024
+U = df["uy"].values.reshape(ny, nx)
+
+plt.figure(figsize=(4, 12))
+plt.imshow(U, origin="lower", cmap="RdBu_r")
+plt.colorbar(label="uy (m/s)")
+plt.title("Vitesse verticale")
+plt.tight_layout()
+plt.savefig("uy.png", dpi=150)
+```
+
+---
+
 ## Diagramme UML
 Pour générer automatiquement le diagramme UML du projet :
 - `clang-uml` à la racine du projet
