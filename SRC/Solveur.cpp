@@ -280,7 +280,10 @@ namespace Solveur {
         PoissonSOR(phi, rhs, g, omega, nu2, 1e-10);
     }
 
-    void PoissonMultigrid(Champ& phi, const Champ& rhs, const Grille& g, int maxiter, double tol, int max_niveaux, int nu1, int nu2){
+    void PoissonMultigrid(Champ& phi, const Champ& rhs, const Grille& g, int maxiter, double tol, int nu1, int nu2){
+        int Nx=g.NX();
+        int Ny=g.NY();
+        int max_niveaux= int(log2(std::min(Nx,Ny))-2);
         for (int iter = 0; iter < maxiter; iter++) {
             VCycle(phi, rhs, g, 0, max_niveaux, nu1, nu2);
 
