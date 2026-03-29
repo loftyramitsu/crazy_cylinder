@@ -240,10 +240,7 @@ namespace Solveur {
     {
         int nx = g.NX(), ny = g.NY();
 
-        //double omega=2./(1+sin(M_PI/std::min(nx,ny)));
-        //omega=std::min(omega,1.95);
-
-        double omega=1.7;
+        double omega=1.7; //valeur de convergence optimale
 
         // Cas de base : grille trop petite, résoudre directement
         if (niveau >= max_niveaux || nx <= 4 || ny <= 4) {
