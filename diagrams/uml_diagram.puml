@@ -15,6 +15,22 @@ class "std::string" as C_0001275076681856179721
 class C_0001275076681856179721 {
 __
 }
+class "std::atomic<bool>" as C_0004308501729698541420
+class C_0004308501729698541420 {
+__
+}
+class "std::vector<float>" as C_0010413144086334379596
+class C_0010413144086334379596 {
+__
+}
+class "std::map<std::string,std::string>" as C_0012004170049756060246
+class C_0012004170049756060246 {
+__
+}
+class "std::map<std::string,std::map<std::string,std::string>>" as C_0017028644241161530164
+class C_0017028644241161530164 {
+__
+}
 class "Site" as C_0001423274317303257258
 class C_0001423274317303257258 {
 +Site(int i, int x, int y) : void
@@ -56,6 +72,8 @@ class C_0003792196203829448009 {
 +LY() const : double
 +NX() const : int
 +NY() const : int
++PosXCyl() const : double
++RadiusCyl() const : double
 -SetBoolCylindre() : void
 +Solide() const : const std::vector<bool> &
 +SolideTexture() const : const std::vector<unsigned char> &
@@ -177,8 +195,10 @@ class C_0009672375814248942351 {
 +initGL() : bool
 -processInput() : void
 -render() : void
-+run() : void
++run(double Tmax, double U, double eps, double omega, int maxiter) : void
+-simulationLoop(double Tmax, double U, double eps, double omega, int maxiter) : void
 __
+-dataMutex : std::mutex
 -fluide : Liquide &
 -gridShader : Shader *
 -gridTexture : unsigned int
@@ -186,8 +206,22 @@ __
 -my_title : std::string
 -my_width : int
 -my_window : GLFWwindow *
+-newFrameReady : std::atomic<bool>
 -quadVAO : unsigned int
 -quadVBO : unsigned int
+-renderBuffer : std::vector<float>
+-running : std::atomic<bool>
+-simThread : std::thread
+}
+class "Config" as C_0008289891971916880997
+class C_0008289891971916880997 {
++getDouble(const std::string & section, const std::string & key, double defaultVal = 0.0) const : double
++getInt(const std::string & section, const std::string & key, int defaultVal = 0) const : int
++getString(const std::string & section, const std::string & key, const std::string & defaultVal = "") const : std::string
++load(const std::string & filepath) : void
+{static} -trim(const std::string & s) : std::string
+__
+-data : std::map<std::string,std::map<std::string,std::string>>
 }
 class "_cl_context" as C_0005505353034777529899
 class C_0005505353034777529899 {
@@ -213,6 +247,9 @@ class "_cl_event" as C_0016742860404031477541
 class C_0016742860404031477541 {
 __
 }
+C_0012004170049756060246 ..> C_0001275076681856179721
+C_0017028644241161530164 ..> C_0001275076681856179721
+C_0017028644241161530164 ..> C_0012004170049756060246
 C_0001423274317303257258 <.. C_0002403819096973212324 : +<<friend>>
 C_0002403819096973212324 ..> C_0001423274317303257258
 C_0002403819096973212324 o-- C_0011328605021903071752 : -tab
@@ -229,6 +266,11 @@ C_0009672375814248942351 o-- C_0001275076681856179721 : -my_title
 C_0009672375814248942351 --> C_0008434725962297335764 : -my_window
 C_0009672375814248942351 --> C_0014899929896336503560 : -gridShader
 C_0009672375814248942351 --> C_0011212354420224549405 : -fluide
+C_0009672375814248942351 o-- C_0004308501729698541420 : -running
+C_0009672375814248942351 o-- C_0010413144086334379596 : -renderBuffer
+C_0009672375814248942351 o-- C_0004308501729698541420 : -newFrameReady
+C_0008289891971916880997 ..> C_0001275076681856179721
+C_0008289891971916880997 o-- C_0017028644241161530164 : -data
 
 'Generated with clang-uml, version 0.6.2
 'LLVM version Ubuntu clang version 15.0.7

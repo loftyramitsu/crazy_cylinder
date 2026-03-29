@@ -9,6 +9,9 @@
 
 # distribution
 build/
+
+output/
+
 #dist/
 #*.egg-info/
 
