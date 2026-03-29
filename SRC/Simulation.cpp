@@ -101,7 +101,7 @@ bool Simulation::initGL() {
 	glEnableVertexAttribArray(1);
 
 	// ---> Texture du masque solide depuis solide[] (masque physique)
-	Grille grille = fluide.Grid();
+	const Grille& grille = fluide.Grid();
 	int nx = grille.NX();
 	int ny = grille.NY();
 	const std::vector<bool>& solide = grille.Solide();
@@ -138,7 +138,7 @@ void Simulation::render() {
 //	if (newFrameReady.exchange(false)) {
 //		std::lock_guard<std::mutex> lock(dataMutex);
 //
-//		Grille grille = fluide.Grid();
+//		const Grille& grille = fluide.Grid();
 //		int nx = grille.NX();
 //		int ny = grille.NY();
 //

@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
     // Fluide
     double nu     = cfg.getDouble("fluide", "nu",  1e-6);
     double rho    = cfg.getDouble("fluide", "rho", 1.0);
-    double U      = cfg.getDouble("fluide", "U",   0.5);
+    double U      = cfg.getDouble("fluide", "U",   0.2);
     double p0     = cfg.getDouble("fluide", "p0",  1e5);
 
     // Cylindre
@@ -55,8 +55,8 @@ int main(int argc, char* argv[]) {
 
     // Simulation
     double Tmax    = cfg.getDouble("simulation", "Tmax",    2.0);
-    double eps     = cfg.getDouble("simulation", "eps",     1e-1);
-    int    maxiter = cfg.getInt   ("simulation", "maxiter", 10);
+    double eps     = cfg.getDouble("simulation", "eps",     1e-2);
+    int    maxiter = cfg.getInt   ("simulation", "maxiter", 25);
 
     // Export
     std::string output_dir = cfg.getString("export", "output_dir", "output");

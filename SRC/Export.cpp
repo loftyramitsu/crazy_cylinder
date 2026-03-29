@@ -12,7 +12,7 @@ namespace Export {
         struct stat st;
         if (stat(dir.c_str(), &st) != 0) {
 #ifdef _WIN32
-            _mkdir(dir.c_str());
+            mkdir(dir.c_str());
 #else
             mkdir(dir.c_str(), 0755);
 #endif
