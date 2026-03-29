@@ -144,14 +144,34 @@ namespace Solveur {
 
 
     Champ Restriction(const Champ& fine) {
-        int nx = fine.Taille_hor() / 2;
-        int ny = fine.Taille_vert() / 2;
+        int nx  = fine.Taille_hor()  / 2;
+        int ny  = fine.Taille_vert() / 2;
+        int fnx = fine.Taille_hor();
+        int fny = fine.Taille_vert();
         Champ coarse(nx, ny);
 
         for (int y = 0; y < ny; y++){
             for (int x = 0; x < nx; x++) {
-                // Moyenne des 4 cellules voisines (full weighting)
-                coarse(x, y) = 0.25 * (fine(2*x, 2*y)  + fine(2*x+1, 2*y) + fine(2*x, 2*y+1) + fine(2*x+1, 2*y+1));
+                int fx = 2*x;
+                int fy = 2*y;
+
+                // Voisins avec réflexion (Neumann) aux bords
+                int fxm = (fx > 0)      ? fx-1 : fx+1;   // réflexion gauche
+                int fxp = (fx < fnx-1)  ? fx+1 : fx-1;   // réflexion droite
+                int fym = (fy > 0)      ? fy-1 : fy+1;   // réflexion bas
+                int fyp = (fy < fny-1)  ? fy+1 : fy-1;   // réflexion haut
+
+                coarse(x, y) = (
+                    4.0 * fine(fx,  fy)  +
+                    2.0 * fine(fxm, fy)  +
+                    2.0 * fine(fxp, fy)  +
+                    2.0 * fine(fx,  fym) +
+                    2.0 * fine(fx,  fyp) +
+                          fine(fxm, fym) +
+                          fine(fxp, fym) +
+                          fine(fxm, fyp) +
+                          fine(fxp, fyp)
+                ) / 16.0;
             }
         }
         return coarse;
@@ -171,33 +191,33 @@ namespace Solveur {
                 double c11 = coarse(x+1, y+1);
 
                 // Cellule coïncidant avec noeud grossier
-                fine(2*x,   2*y)   += c00;
+                fine(2*x,   2*y)   = c00;
 
                 // Cellule entre deux noeuds grossiers en x
-                fine(2*x+1, 2*y)   += 0.5 * (c00 + c10);
+                fine(2*x+1, 2*y)   = 0.5 * (c00 + c10);
 
                 // Cellule entre deux noeuds grossiers en y
-                fine(2*x,   2*y+1) += 0.5 * (c00 + c01);
+                fine(2*x,   2*y+1) = 0.5 * (c00 + c01);
 
                 // Cellule centrale entre 4 noeuds grossiers
-                fine(2*x+1, 2*y+1) += 0.25 * (c00 + c10 + c01 + c11);
+                fine(2*x+1, 2*y+1) = 0.25 * (c00 + c10 + c01 + c11);
             }
         }
 
         // Dernière colonne
         for (int y = 0; y < ny_c-1; y++) {
-            fine(2*(nx_c-1), 2*y)   += coarse(nx_c-1, y);
-            fine(2*(nx_c-1), 2*y+1) += 0.5 * (coarse(nx_c-1, y) + coarse(nx_c-1, y+1));
+            fine(2*(nx_c-1), 2*y)   = coarse(nx_c-1, y);
+            fine(2*(nx_c-1), 2*y+1) = 0.5 * (coarse(nx_c-1, y) + coarse(nx_c-1, y+1));
         }
 
         // Dernière ligne
         for (int x = 0; x < nx_c-1; x++) {
-            fine(2*x,   2*(ny_c-1)) += coarse(x, ny_c-1);
-            fine(2*x+1, 2*(ny_c-1)) += 0.5 * (coarse(x, ny_c-1) + coarse(x+1, ny_c-1));
+            fine(2*x,   2*(ny_c-1)) = coarse(x, ny_c-1);
+            fine(2*x+1, 2*(ny_c-1)) = 0.5 * (coarse(x, ny_c-1) + coarse(x+1, ny_c-1));
         }
 
         // Coin
-        fine(2*(nx_c-1), 2*(ny_c-1)) += coarse(nx_c-1, ny_c-1);
+        fine(2*(nx_c-1), 2*(ny_c-1)) = coarse(nx_c-1, ny_c-1);
 
         return fine;
     }
@@ -206,8 +226,8 @@ namespace Solveur {
         int nx = g.NX(), ny = g.NY();
         Champ res(nx, ny);
 
-        for (int y = 1; y < ny-1; y++){
-            for (int x = 1; x < nx-1; x++) {
+        for (int y = 0; y < ny; y++){
+            for (int x = 0; x < nx; x++) {
                 if (g.Solide()[x + y*nx]) continue;
                 double Lphi = Laplacien(phi, g, x, y);
                 res(x, y) = rhs(x, y) - Lphi;
@@ -216,9 +236,14 @@ namespace Solveur {
         return res;
     }
 
-    void VCycle(Champ& phi, const Champ& rhs, const Grille& g, int niveau, int max_niveaux, int nu1, int nu2, double omega)
+    void VCycle(Champ& phi, const Champ& rhs, const Grille& g, int niveau, int max_niveaux, int nu1, int nu2)
     {
         int nx = g.NX(), ny = g.NY();
+
+        //double omega=2./(1+sin(M_PI/std::min(nx,ny)));
+        //omega=std::min(omega,1.95);
+
+        double omega=1.7;
 
         // Cas de base : grille trop petite, résoudre directement
         if (niveau >= max_niveaux || nx <= 4 || ny <= 4) {
@@ -240,12 +265,12 @@ namespace Solveur {
         Champ err_coarse(nx/2, ny/2); // initialisée à 0
 
         // 5. Résolution récursive
-        VCycle(err_coarse, res_coarse, g_coarse, niveau+1, max_niveaux, nu1, nu2, omega);
+        VCycle(err_coarse, res_coarse, g_coarse, niveau+1, max_niveaux, nu1, nu2);
 
         // 6. Prolongation et correction
         Champ err_fine = Prolongation(err_coarse, nx, ny);
-        for (int y = 1; y < ny-1; y++){
-            for (int x = 1; x < nx-1; x++){
+        for (int y = 0; y < ny; y++){
+            for (int x = 0; x < nx; x++){
                 if (!g.Solide()[x + y*nx])
                     phi(x, y) += err_fine(x, y);
             }
@@ -255,17 +280,17 @@ namespace Solveur {
         PoissonSOR(phi, rhs, g, omega, nu2, 1e-10);
     }
 
-    void PoissonMultigrid(Champ& phi, const Champ& rhs, const Grille& g, int maxiter, double tol, double omega, int max_niveaux, int nu1, int nu2){
+    void PoissonMultigrid(Champ& phi, const Champ& rhs, const Grille& g, int maxiter, double tol, int max_niveaux, int nu1, int nu2){
         for (int iter = 0; iter < maxiter; iter++) {
-            VCycle(phi, rhs, g, 0, max_niveaux, nu1, nu2, omega);
+            VCycle(phi, rhs, g, 0, max_niveaux, nu1, nu2);
 
             // Vérification convergence
             Champ res = Residuel(phi, rhs, g);
             double err = 0.;
             int nx = g.NX(), ny = g.NY();
-            for (int y = 1; y < ny-1; y++)
-                for (int x = 1; x < nx-1; x++)
-                    err += std::abs(res(x, y));
+            for (int y = 0; y < ny; y++)
+                for (int x = 0; x < nx; x++)
+                    err = std::max(err, std::abs(res(x, y)));
             std::cout << "V-cycle " << iter+1 << " err = " << err << std::endl;
             if (err < tol) return;
         }

@@ -41,9 +41,9 @@ namespace Solveur {
     Champ Residuel(const Champ& phi, const Champ& rhs, const Grille& g);
 
     // V-cycle multigrid
-    void VCycle(Champ& phi, const Champ& rhs, const Grille& g, int niveau, int max_niveaux, int nu1, int nu2, double omega);
+    void VCycle(Champ& phi, const Champ& rhs, const Grille& g, int niveau, int max_niveaux, int nu1, int nu2);
 
     // Remplace PoissonSOR pour l'appel depuis Liquide
-    void PoissonMultigrid(Champ& phi, const Champ& rhs, const Grille& g, int maxiter, double tol, double omega, int max_niveaux=1, int nu1=50, int nu2=50);
+    void PoissonMultigrid(Champ& phi, const Champ& rhs, const Grille& g, int maxiter, double tol, int max_niveaux=8, int nu1=6, int nu2=6);
 }
 
