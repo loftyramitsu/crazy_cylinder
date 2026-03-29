@@ -71,7 +71,7 @@ class Liquide {
     Champ& Uy_star() { return uy_star; }
     double& Uy_star(int x, int y) { return uy_star(x, y); }
 
-    Grille Grid() const { return grid; }
+    const Grille& Grid() const { return grid; }
 
     // Divergence du champ de vitesse
     double div_u(int x,int y) const;
