@@ -159,14 +159,13 @@ void Simulation::copyFieldToBuffer() {
 	} else if (champAffiche == "p") {
 		const auto& tab = fluide.P().GetTab();
 		renderBuffer.resize(tab.size());
-
-		float mean = 0.f;
-		for (float v : tab) mean += v;
-		mean /= tab.size();
-
+		double mean = 0.0;
+		for (double v : tab) mean += v;
+		mean /= (double)tab.size();
 		for (size_t i = 0; i < tab.size(); i++)
-			renderBuffer[i] = (tab[i] - mean)/mean;
+			renderBuffer[i] = (float)(tab[i] - mean);
 		//renderBuffer.assign(tab.begin(), tab.end());
+
 	} else { // u_norm
 		const auto& tabX = fluide.Ux().GetTab();
 		const auto& tabY = fluide.Uy().GetTab();
