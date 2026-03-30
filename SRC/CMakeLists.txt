@@ -22,6 +22,7 @@ target_link_libraries(Projet
 		glfw
 		OpenGL::GL
 		Threads::Threads
+		OpenMP::OpenMP_CXX
 	)
 
 

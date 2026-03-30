@@ -13,7 +13,7 @@
 
 class Simulation {
 	public:
-		Simulation(int width, int height, const std::string& title, Liquide& fluideRef);
+		Simulation(int width, int height, const std::string& title, Liquide& fluideRef, const std::string& champAffiche);
 		~Simulation();
 
 		// Lance la boucle OpenGL et intègre la simulation physique
@@ -27,15 +27,16 @@ class Simulation {
 		bool initGL();
 
 	private:
-		int my_height;
-		int my_width;
+		int my_height, my_width;
 		std::string my_title;
 		GLFWwindow* my_window;
 		Shader* gridShader;
 		unsigned int quadVAO, quadVBO;
-		unsigned int gridTexture;
+		unsigned int solidTexture;   // masque solide fixe
+		unsigned int dataTexture;    // champ physique mis à jour
 
 		Liquide& fluide;
+		std::string champAffiche;    // "ux" | "uy" | "p" | "u_norm"
 
 		void processInput();
 		void render();
@@ -50,6 +51,6 @@ class Simulation {
 		std::atomic<bool> newFrameReady;  // flag : nouvelle donnée dispo
 
 		void simulationLoop(double Tmax, double U, double eps, double omega, int maxiter);
-
+		void copyFieldToBuffer(); 	// Rempli renderBuffer selon champAffiche
 
 };
