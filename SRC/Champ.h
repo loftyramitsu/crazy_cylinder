@@ -37,6 +37,7 @@ public:
     }
 
     // Accès au vecteur complet
+    const std::vector<double>& GetTab() const { return tab; }
     std::vector<double>& GetTab() { return tab; }
 
     // Getters dimension
