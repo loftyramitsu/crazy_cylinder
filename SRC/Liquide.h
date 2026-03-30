@@ -86,7 +86,7 @@ class Liquide {
 		double convection(const Champ& u, int x, int y) const;
 
 		//Résolution eq Poisson pour la pression
-		void SolveurPression(double eps, double dt, double omega, int Maxiter);
+		void SolveurPression(double eps, double dt, int Maxiter);
 
 	private:
 

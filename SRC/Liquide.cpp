@@ -37,7 +37,7 @@ double Liquide::convection(const Champ& u, int x, int y) const {
 	return this->ux(x,y)*dudx + this->uy(x,y)*dudy;
 }
 
-void Liquide::SolveurPression(double eps, double dt, double omega, int Maxiter){
+void Liquide::SolveurPression(double eps, double dt, int Maxiter){
 	int nx = this->grid.NX();
 	int ny = this->grid.NY();
 	Champ rhs(nx,ny);
@@ -156,12 +156,12 @@ void Liquide::condi_lim(double U){
 		if(s.x() == 0 || s.x() == nx-1 || s.y() == 0 || s.y() == ny-1){
 			if(s.x()==0 || s.x()== nx-1){
 				this->ux[s]=0.;
-				this->uy[s]=U;
+				this->uy[s]=0.;
 			}
-		} else {
+		}else{
 			if(S[i+1] || S[i-1] || S[i+nx] || S[i-nx]){
 				this->ux[s]=0.;
-				this->uy[s]=0.;
+				this->uy[s]=-U;
 			}
 		}
 	}

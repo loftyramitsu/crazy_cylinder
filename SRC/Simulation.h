@@ -20,9 +20,8 @@ class Simulation {
 		// Tmax    : temps physique final
 		// U       : vitesse d'entrée (pour condi_lim)
 		// eps     : tolérance solveur pression
-		// omega   : paramètre SOR
 		// maxiter : itérations max solveur pression
-		void run(double Tmax, double U, double eps, double omega, int maxiter);
+		void run(double Tmax, double U, double eps, int maxiter);
 
 		bool initGL();
 
@@ -50,7 +49,7 @@ class Simulation {
 		std::vector<float> renderBuffer;  // valeurs à afficher
 		std::atomic<bool> newFrameReady;  // flag : nouvelle donnée dispo
 
-		void simulationLoop(double Tmax, double U, double eps, double omega, int maxiter);
+		void simulationLoop(double Tmax, double U, double eps, int maxiter);
 		void copyFieldToBuffer(); 	// Rempli renderBuffer selon champAffiche
 
 };
