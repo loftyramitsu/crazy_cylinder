@@ -50,7 +50,7 @@ void Liquide::SolveurPression(double eps, double dt, double omega, int Maxiter){
 		}
 	}
 
-    PoissonMultigrid(this->p, rhs, this->grid, Maxiter, eps);
+	PoissonMultigrid(this->p, rhs, this->grid, Maxiter, eps);
 }
 
 void Liquide::calc_ux_star(int x, int y, double dt){
@@ -72,58 +72,58 @@ void Liquide::calc_uy_star(int x, int y, double dt){
 void Liquide::calc_tot_U_star(double dt){
 	int nx=(*this).Grid().NX();
 	int ny=(*this).Grid().NY();
-	for(int y=0; y<ny;y++){
-		for(int x=0; x<nx; x++){
-			if(x <= 0 || x >= nx-1 || y <= 0 || y >= ny-1){
-				this->ux_star(x,y) = this->ux(x,y);
-				this->uy_star(x,y) = this->uy(x,y);
-			} else {
-				if(this->grid.Solide()[x+y*nx]==false){
-					(*this).calc_ux_star(x,y,dt);
-					(*this).calc_uy_star(x,y,dt);
-				}
+#pragma omp parallel for collapse(2) schedule(static)
+	for(int y=1; y < ny-1; y++){
+		for(int x=1; x < nx-1; x++){
+			if(!grid.Solide()[x+y*nx]){
+				calc_ux_star(x,y,dt);
+				calc_uy_star(x,y,dt);
 			}
 		}
 	}
+	this -> ux_star(0, 0) = this -> ux(0, 0);
+	this -> ux_star(nx-1, 0) = this -> ux(nx-1, 0);
+	this -> ux_star(0, ny-1) = this -> ux(0, ny-1);
+	this -> ux_star(nx-1, ny-1) = this -> ux(nx-1, ny-1);
 }
 
 void Liquide::Contrib(double dt){
-	int nx = this->grid.NX();
-	int ny = this->grid.NY();
-	for(int y=1;y < ny-1; y++){
-		for(int x=1; x<nx-1 ; x++){
-			if(this->grid.Solide()[x+y*nx]==false){
-				double dpdx = GradX_c( (*this).P(),this->grid,x,y);
-				double dpdy = GradY_c( (*this).P(),this->grid,x,y);
+	int nx = grid.NX(), ny = grid.NY();
+#pragma omp parallel for collapse(2) schedule(static)
+	for(int y=1; y < ny-1; y++){
+		for(int x=1; x < nx-1 ; x++){
+			if(!grid.Solide()[x+y*nx]){
+				double dpdx = GradX_c(p, grid,x,y);
+				double dpdy = GradY_c(p, grid,x,y);
 
-				this->ux(x,y) = this->ux_star(x,y) - dpdx * dt/ this->rho_l ;
-				this->uy(x,y) = this->uy_star(x,y) - dpdy * dt/ this->rho_l ;
-			}
+						ux(x,y) = ux_star(x,y) - dpdx * dt / rho_l ;
+						uy(x,y) = uy_star(x,y) - dpdy * dt / rho_l ;
+						}
 
-		}
-	}
-}
+						}
+						}
+						}
 
-double Liquide::vmax(char c) {
-	double v;
-	int nx = this->grid.NX();
-	int ny = this->grid.NY();
-	if(c=='x'){
-		v= this->ux(0,0);
-		for(int i=1;i<nx*ny;i++){
-			Site s = this->ux.site_xy(i);
-			if (abs(this->ux[s]) >= v) v= this->ux[s];
-		}
-	} else if(c=='y'){
-		v= this->uy(0,0);
-		for(int i=1;i<nx*ny;i++){
-			Site s = this->uy.site_xy(i);
-			if (abs(this->uy[s]) >= v) v= this->uy[s];
-		}
-	}
+						double Liquide::vmax(char c) {
+						double v;
+						int nx = this->grid.NX();
+						int ny = this->grid.NY();
+						if(c=='x'){
+						v= this->ux(0,0);
+						for(int i=1;i<nx*ny;i++){
+						Site s = this->ux.site_xy(i);
+						if (abs(this->ux[s]) >= v) v= this->ux[s];
+						}
+						} else if(c=='y'){
+							v= this->uy(0,0);
+							for(int i=1;i<nx*ny;i++){
+								Site s = this->uy.site_xy(i);
+								if (abs(this->uy[s]) >= v) v= this->uy[s];
+							}
+						}
 
-	return v;
-}
+						return v;
+						}
 
 double Liquide::CFL(){
 	double newdt;
