@@ -37,6 +37,12 @@ static void checkProgramLink(unsigned int program) {
 	}
 }
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+	// Pour le redimensionnement de la fenêtre -> Sinon l'affichage openGL ne s'adapte pas à la taille de la fenêtre
+	glViewport(0, 0, width, height);
+}
+
+
 bool Simulation::initGL() {
 	if (!glfwInit()) {
 		std::cerr << "Impossible d'initialiser GLFW\n";
@@ -46,7 +52,7 @@ bool Simulation::initGL() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
 #ifdef __APPLE__
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -58,7 +64,9 @@ bool Simulation::initGL() {
 		glfwTerminate();
 		return false;
 	}
+	glfwSetWindowAspectRatio(my_window, my_width, my_height);
 	glfwMakeContextCurrent(my_window);
+	glfwSetFramebufferSizeCallback(my_window, framebuffer_size_callback);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		std::cerr << "Impossible d'initialiser GLAD\n";
@@ -150,7 +158,14 @@ void Simulation::copyFieldToBuffer() {
 		renderBuffer.assign(tab.begin(), tab.end());
 	} else if (champAffiche == "p") {
 		const auto& tab = fluide.P().GetTab();
-		renderBuffer.assign(tab.begin(), tab.end());
+		renderBuffer.resize(tab.size());
+		double mean = 0.0;
+		for (double v : tab) mean += v;
+		mean /= (double)tab.size();
+		for (size_t i = 0; i < tab.size(); i++)
+			renderBuffer[i] = (float)(tab[i] - mean);
+		//renderBuffer.assign(tab.begin(), tab.end());
+
 	} else { // u_norm
 		const auto& tabX = fluide.Ux().GetTab();
 		const auto& tabY = fluide.Uy().GetTab();
