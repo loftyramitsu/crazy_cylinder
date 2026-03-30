@@ -51,11 +51,7 @@ int main(int argc, char* argv[]) {
 
     // Cylindre
     double cx     = cfg.getDouble("cylindre", "cx",     lx / 2.);
-<<<<<<< HEAD
     double radius = cfg.getDouble("cylindre", "radius", 0.2);
-=======
-    double radius = cfg.getDouble("cylindre", "radius", lx / 8);
->>>>>>> 9c4ea46ad118046894ec99fc641c1bfdb9119499
 
     // Simulation
     double Tmax    = cfg.getDouble("simulation", "Tmax",    10.0);
