@@ -24,6 +24,9 @@ endif()
 # ---> Threads needed
 find_package(Threads REQUIRED)
 
+# ---> OpenMP Needed
+find_package(OpenMP REQUIRED)
+
 # ---> Add SRC directory
 add_subdirectory(SRC)
 
