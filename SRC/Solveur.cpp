@@ -258,7 +258,7 @@ namespace Solveur {
         Champ res_coarse = Restriction(res);
 
         // 4. Grille grossière
-        Grille g_coarse(nx/2, ny/2, g.LX(), g.LY(), g.PosXCyl()/1., g.RadiusCyl());
+        Grille g_coarse(nx/2, ny/2, g.LX(), g.LY(), g.PosXCyl(), g.RadiusCyl());
         Champ err_coarse(nx/2, ny/2); // initialisée à 0
 
         // 5. Résolution récursive

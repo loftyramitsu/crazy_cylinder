@@ -38,23 +38,23 @@ int main(int argc, char* argv[]) {
     // -------------------------------------------------------
 
     // Grille
-    int    nx     = cfg.getInt   ("grille", "nx",  1024);
-    int    ny     = cfg.getInt   ("grille", "ny",  1024);
-    double lx     = cfg.getDouble("grille", "lx",  1.0);
-    double ly     = cfg.getDouble("grille", "ly",  15.0);
+    int    nx     = cfg.getInt   ("grille", "nx",  256);
+    int    ny     = cfg.getInt   ("grille", "ny",  256);
+    double lx     = cfg.getDouble("grille", "lx",  0.5);
+    double ly     = cfg.getDouble("grille", "ly",  1.0);
 
     // Fluide
     double nu     = cfg.getDouble("fluide", "nu",  1e-6);
     double rho    = cfg.getDouble("fluide", "rho", 1.0);
-    double U      = cfg.getDouble("fluide", "U",   0.2);
+    double U      = cfg.getDouble("fluide", "U",   0.15);
     double p0     = cfg.getDouble("fluide", "p0",  1e5);
 
     // Cylindre
     double cx     = cfg.getDouble("cylindre", "cx",     lx / 2.);
-    double radius = cfg.getDouble("cylindre", "radius", 0.0);
+    double radius = cfg.getDouble("cylindre", "radius", 0.2);
 
     // Simulation
-    double Tmax    = cfg.getDouble("simulation", "Tmax",    2.0);
+    double Tmax    = cfg.getDouble("simulation", "Tmax",    10.0);
     double eps     = cfg.getDouble("simulation", "eps",     1e-2);
     int    maxiter = cfg.getInt   ("simulation", "maxiter", 25);
 
