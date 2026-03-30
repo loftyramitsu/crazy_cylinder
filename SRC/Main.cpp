@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
 
     // Cylindre
     double cx     = cfg.getDouble("cylindre", "cx",     lx / 2.);
-    double radius = cfg.getDouble("cylindre", "radius", 0.0);
+    double radius = cfg.getDouble("cylindre", "radius", lx / 8);
 
     // Simulation
     double Tmax    = cfg.getDouble("simulation", "Tmax",    2.0);
@@ -64,30 +64,17 @@ int main(int argc, char* argv[]) {
     // Paramètre SOR (calculé, non exposé dans le INI car dépend de ny)
     double omega = 2. / (1. + sin(M_PI / ny));
 
+    // Champ Affiché
+    std::string champ = cfg.getString("affichage", "champ", "u_norm");
+
     // -------------------------------------------------------
     // Création du fluide et de la simulation
     // -------------------------------------------------------
     Liquide fluide(nx, ny, lx, ly, nu, rho, cx, radius, U, p0);
-    Simulation sim(nx, ny, "Simulation cylindre", fluide);
+    Simulation sim(nx, ny, "Simulation cylindre", fluide, champ);
 
     // Now, .run() contains the physical loop and the OpenGL loop
     sim.run(Tmax, U, eps, omega, maxiter);
-
-    // -------------------------------------------------------
-    // Boucle temporelle
-    // -------------------------------------------------------
-//    double T = 0.;
-//    while (T < Tmax) {
-//        double dt = fluide.CFL();
-//        std::cout << "T = " << T << "  dt = " << dt << "\n";
-//
-//        fluide.calc_tot_U_star(dt);
-//        fluide.SolveurPression(eps, dt, omega, maxiter);
-//        fluide.Contrib(dt);
-//        fluide.condi_lim(U);
-//
-//        T += dt;
-//    }
 
     // -------------------------------------------------------
     // Export final des champs
