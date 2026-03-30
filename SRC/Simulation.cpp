@@ -208,13 +208,13 @@ void Simulation::processInput() {
 		glfwSetWindowShouldClose(my_window, true);
 }
 
-void Simulation::simulationLoop(double Tmax, double U, double eps, double omega, int maxiter) {
+void Simulation::simulationLoop(double Tmax, double U, double eps, int maxiter) {
 	double T = 0.;
 	while (running && T < Tmax) {
 		double dt = fluide.CFL();
 		// Calculs lourds SANS lock
 		fluide.calc_tot_U_star(dt);
-		fluide.SolveurPression(eps, dt, omega, maxiter);
+		fluide.SolveurPression(eps, dt, maxiter);
 		fluide.Contrib(dt);
 		fluide.condi_lim(U);
 		T += dt;
@@ -232,7 +232,7 @@ void Simulation::simulationLoop(double Tmax, double U, double eps, double omega,
 	running = false;
 }
 
-void Simulation::run(double Tmax, double U, double eps, double omega, int maxiter) {
+void Simulation::run(double Tmax, double U, double eps, int maxiter) {
 	if (!initGL()) return;
 
 	running = true;
@@ -240,7 +240,7 @@ void Simulation::run(double Tmax, double U, double eps, double omega, int maxite
 	renderBuffer.resize(fluide.Grid().NX() * fluide.Grid().NY(), 0.f);
 	// Lance la simulation dans un thread séparé
 	simThread = std::thread(&Simulation::simulationLoop, this,
-			Tmax, U, eps, omega, maxiter);
+			Tmax, U, eps, maxiter);
 
 	// Le thread principal gère uniquement OpenGL
 	while (!glfwWindowShouldClose(my_window)) {
