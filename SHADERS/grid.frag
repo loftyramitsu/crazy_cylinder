@@ -6,7 +6,6 @@ out vec4 FragColor;
 uniform sampler2D uData;  // texture unit 0 — champ physique normalisé [0,1]
 uniform sampler2D uSolid; // texture unit 1 — masque solide
 
-// Colormap "Viridis" approximée par polynômes
 vec3 viridis(float t) {
 	t = clamp(t, 0.0, 1.0);
 	vec3 c = vec3(0.0);
@@ -14,6 +13,26 @@ vec3 viridis(float t) {
 	c.g = 0.005 + t*(1.015 + t*(-0.387 + t*(-1.540 + t*(2.101 - t*0.768))));
 	c.b = 0.329 + t*(1.384 + t*(-2.994 + t*(2.994 + t*(-1.742 + t*0.389))));
 	return clamp(c, 0.0, 1.0);
+}
+
+vec3 RdBu_r(float t) {
+	t = clamp(t, 0.0, 1.0);
+
+	vec3 blue_dark  = vec3(0.0196, 0.1882, 0.3804); // bleu foncé
+	vec3 white = vec3(1.0, 1.0, 1.0);
+	vec3 black = vec3(0.0, 0.0, 0.0);
+	vec3 red_dark   = vec3(0.4039, 0.0, 0.1216);    // rouge foncé
+
+	vec3 blue  = vec3(0.4, 0.7, 1.0);	// bleu clair
+	vec3 red   = vec3(1.0, 0.45, 0.45);	// rouge clair
+
+	if (t < 0.5) {
+		float u = t / 0.5;
+		return mix(blue, black, u);
+	} else {
+		float u = (t - 0.5) / 0.5;
+		return mix(black, red, u);
+	}
 }
 
 void main()
@@ -36,12 +55,6 @@ void main()
 		return;
 	}
 
-	// Champ de vitesse : rehaussement sigmoïde
-	// centre : décale le contraste (0.3 → accentue les basses vitesses)
-	// pente  : contrôle la transition (8.0 = assez franche)
 	float val = texture(uData, TexCoord).r;
-	float centre = 0.3;
-	float pente  = 8.0;
-	val = 1.0 / (1.0 + exp(-pente * (val - centre)));
-	FragColor = vec4(viridis(val), 1.0);
+	FragColor = vec4(RdBu_r(val), 1.0);
 }

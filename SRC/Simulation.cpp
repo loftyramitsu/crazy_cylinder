@@ -38,7 +38,7 @@ static void checkProgramLink(unsigned int program) {
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    // Pour le redimensionnement de la fenêtre -> Sinon l'affichage openGL ne s'adapte pas à la taille de la fenêtre
+	// Pour le redimensionnement de la fenêtre -> Sinon l'affichage openGL ne s'adapte pas à la taille de la fenêtre
 	glViewport(0, 0, width, height);
 }
 
@@ -158,7 +158,15 @@ void Simulation::copyFieldToBuffer() {
 		renderBuffer.assign(tab.begin(), tab.end());
 	} else if (champAffiche == "p") {
 		const auto& tab = fluide.P().GetTab();
-		renderBuffer.assign(tab.begin(), tab.end());
+		renderBuffer.resize(tab.size());
+
+		float mean = 0.f;
+		for (float v : tab) mean += v;
+		mean /= tab.size();
+
+		for (size_t i = 0; i < tab.size(); i++)
+			renderBuffer[i] = (tab[i] - mean)/mean;
+		//renderBuffer.assign(tab.begin(), tab.end());
 	} else { // u_norm
 		const auto& tabX = fluide.Ux().GetTab();
 		const auto& tabY = fluide.Uy().GetTab();
