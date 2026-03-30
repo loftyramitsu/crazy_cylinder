@@ -36,8 +36,12 @@ void main()
 		return;
 	}
 
-	// Champ de vitesse : rehaussement gamma pour étirer les basses valeurs
+	// Champ de vitesse : rehaussement sigmoïde
+	// centre : décale le contraste (0.3 → accentue les basses vitesses)
+	// pente  : contrôle la transition (8.0 = assez franche)
 	float val = texture(uData, TexCoord).r;
-	val = pow(val, 0.3); // exposant < 1 → plus de contraste dans les faibles vitesses
+	float centre = 0.3;
+	float pente  = 8.0;
+	val = 1.0 / (1.0 + exp(-pente * (val - centre)));
 	FragColor = vec4(viridis(val), 1.0);
 }
