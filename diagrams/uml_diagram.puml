@@ -53,6 +53,7 @@ class C_0002403819096973212324 {
 +operator[](Site s) const : double
 +operator[](Site s) : double &
 ..
++GetTab() const : const std::vector<double> &
 +GetTab() : std::vector<double> &
 +Taille_hor() const : int
 +Taille_vert() const : int
@@ -98,14 +99,17 @@ class C_0011212354420224549405 {
 ..
 +CFL() : double
 +Contrib(double dt) : void
-+Grid() const : Grille
++Grid() const : const Grille &
++P() const : const Champ &
 +P() : Champ &
 +P(int x, int y) : double &
 +SolveurPression(double eps, double dt, double omega, int Maxiter) : void
-+Ux(int x, int y) : double &
 +Ux() : Champ &
++Ux(int x, int y) : double &
++Ux() const : const Champ &
 +Ux_star() : Champ &
 +Ux_star(int x, int y) : double &
++Uy() const : const Champ &
 +Uy() : Champ &
 +Uy(int x, int y) : double &
 +Uy_star(int x, int y) : double &
@@ -189,19 +193,21 @@ __
 }
 class "Simulation" as C_0009672375814248942351
 class C_0009672375814248942351 {
-+Simulation(int width, int height, const std::string & title, Liquide & fluideRef) : void
++Simulation(int width, int height, const std::string & title, Liquide & fluideRef, const std::string & champAffiche) : void
 +~Simulation() : void
 ..
+-copyFieldToBuffer() : void
 +initGL() : bool
 -processInput() : void
 -render() : void
 +run(double Tmax, double U, double eps, double omega, int maxiter) : void
 -simulationLoop(double Tmax, double U, double eps, double omega, int maxiter) : void
 __
+-champAffiche : std::string
 -dataMutex : std::mutex
+-dataTexture : unsigned int
 -fluide : Liquide &
 -gridShader : Shader *
--gridTexture : unsigned int
 -my_height : int
 -my_title : std::string
 -my_width : int
@@ -212,6 +218,7 @@ __
 -renderBuffer : std::vector<float>
 -running : std::atomic<bool>
 -simThread : std::thread
+-solidTexture : unsigned int
 }
 class "Config" as C_0008289891971916880997
 class C_0008289891971916880997 {
@@ -266,6 +273,7 @@ C_0009672375814248942351 o-- C_0001275076681856179721 : -my_title
 C_0009672375814248942351 --> C_0008434725962297335764 : -my_window
 C_0009672375814248942351 --> C_0014899929896336503560 : -gridShader
 C_0009672375814248942351 --> C_0011212354420224549405 : -fluide
+C_0009672375814248942351 o-- C_0001275076681856179721 : -champAffiche
 C_0009672375814248942351 o-- C_0004308501729698541420 : -running
 C_0009672375814248942351 o-- C_0010413144086334379596 : -renderBuffer
 C_0009672375814248942351 o-- C_0004308501729698541420 : -newFrameReady
