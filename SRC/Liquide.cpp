@@ -96,34 +96,34 @@ void Liquide::Contrib(double dt){
 				double dpdx = GradX_c(p, grid,x,y);
 				double dpdy = GradY_c(p, grid,x,y);
 
-						ux(x,y) = ux_star(x,y) - dpdx * dt / rho_l ;
-						uy(x,y) = uy_star(x,y) - dpdy * dt / rho_l ;
-						}
+				ux(x,y) = ux_star(x,y) - dpdx * dt / rho_l ;
+				uy(x,y) = uy_star(x,y) - dpdy * dt / rho_l ;
+			}
 
-						}
-						}
-						}
+		}
+	}
+}
 
-						double Liquide::vmax(char c) {
-						double v;
-						int nx = this->grid.NX();
-						int ny = this->grid.NY();
-						if(c=='x'){
-						v= this->ux(0,0);
-						for(int i=1;i<nx*ny;i++){
-						Site s = this->ux.site_xy(i);
-						if (abs(this->ux[s]) >= v) v= this->ux[s];
-						}
-						} else if(c=='y'){
-							v= this->uy(0,0);
-							for(int i=1;i<nx*ny;i++){
-								Site s = this->uy.site_xy(i);
-								if (abs(this->uy[s]) >= v) v= this->uy[s];
-							}
-						}
+double Liquide::vmax(char c) {
+	double v;
+	int nx = this->grid.NX();
+	int ny = this->grid.NY();
+	if(c=='x'){
+		v= this->ux(0,0);
+		for(int i=1;i<nx*ny;i++){
+			Site s = this->ux.site_xy(i);
+			if (abs(this->ux[s]) >= v) v= this->ux[s];
+		}
+	} else if(c=='y'){
+		v= this->uy(0,0);
+		for(int i=1;i<nx*ny;i++){
+			Site s = this->uy.site_xy(i);
+			if (abs(this->uy[s]) >= v) v= this->uy[s];
+		}
+	}
 
-						return v;
-						}
+	return v;
+}
 
 double Liquide::CFL(){
 	double newdt;
@@ -156,12 +156,15 @@ void Liquide::condi_lim(double U){
 		if(s.x() == 0 || s.x() == nx-1 || s.y() == 0 || s.y() == ny-1){
 			if(s.x()==0 || s.x()== nx-1){
 				this->ux[s]=0.;
-				this->uy[s]=0.;
+				this->uy[s]=U;
+			}
+			if(s.y() == 0 || s.y() == ny-1){
+				this->uy[s]=U;
 			}
 		}else{
 			if(S[i+1] || S[i-1] || S[i+nx] || S[i-nx]){
 				this->ux[s]=0.;
-				this->uy[s]=-U;
+				this->uy[s]=0.;
 			}
 		}
 	}

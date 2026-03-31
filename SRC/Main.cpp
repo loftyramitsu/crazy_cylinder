@@ -51,6 +51,7 @@ int main(int argc, char* argv[]) {
 
 	// Cylindre
 	double cx     = cfg.getDouble("cylindre", "cx",     lx / 2.);
+	double cy     = cfg.getDouble("cylindre", "cy",     ly / 2.);
 	double radius = cfg.getDouble("cylindre", "radius", lx / 8);
 
 	// Simulation
@@ -79,7 +80,7 @@ int main(int argc, char* argv[]) {
 	// -------------------------------------------------------
 	// Création du fluide et de la simulation
 	// -------------------------------------------------------
-	Liquide fluide(nx, ny, lx, ly, nu, rho, cx, radius, U, p0);
+	Liquide fluide(nx, ny, lx, ly, nu, rho, cx, cy, radius, U, p0);
 	Simulation sim(windowWidth, windowHeight, "Simulation cylindre", fluide, champ);
 
 	// Now, .run() contains the physical loop and the OpenGL loop

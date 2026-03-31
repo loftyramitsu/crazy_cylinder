@@ -24,9 +24,9 @@ class Liquide {
 		Champ ux_star, uy_star;
 
 	public:
-		Liquide(int nx, int ny, double lx, double ly, double nu, double rho, double cx, double radius, double U, double p0)
+		Liquide(int nx, int ny, double lx, double ly, double nu, double rho, double cx, double cy, double radius, double U, double p0)
 			: visc(nu), rho_l(rho),
-			grid(nx, ny, lx, ly, cx, radius),
+			grid(nx, ny, lx, ly, cx, cy, radius),
 			ux(nx, ny), uy(nx, ny),
 			p(nx, ny), ux_star(nx, ny), uy_star(nx, ny)
 	{
@@ -48,8 +48,6 @@ class Liquide {
 				p[s] = p0;
 				if(grid.Solide()[i] || grid.Solide()[i+1] || grid.Solide()[i-1] || grid.Solide()[i+nx] || grid.Solide()[i-nx]){
 					uy[s] = 0.;
-				} else {
-					uy[s] = U;
 				}
 			}
 		}

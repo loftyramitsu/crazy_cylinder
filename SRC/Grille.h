@@ -29,12 +29,11 @@ class Grille {
 
 	public:
 		// Constructeur
-		Grille(int nx, int ny, double lx, double ly, double cx, double radius=0.)
-			: Nx(nx), Ny(ny), Lx(lx), Ly(ly), pos_x_cyl(cx), radius_cyl(radius), solide(nx*ny, false), solide_texture(nx*ny, 0)
+		Grille(int nx, int ny, double lx, double ly, double cx, double cy, double radius=0.)
+			: Nx(nx), Ny(ny), Lx(lx), Ly(ly), pos_x_cyl(cx), pos_y_cyl(cy), radius_cyl(radius), solide(nx*ny, false), solide_texture(nx*ny, 0)
 		{
 			dx = lx / nx;
 			dy = ly / ny;
-			pos_y_cyl = ly / 2.;   // centre en y
 			SetBoolCylindre();     // remplit le masque solide
 		}
 
@@ -46,6 +45,7 @@ class Grille {
 		double dX() const { return dx; }
 		double dY() const { return dy; }
 		double PosXCyl() const { return pos_x_cyl; }
+		double PosYCyl() const { return pos_y_cyl; }
 		double RadiusCyl() const { return radius_cyl; }
 
 		// Accès au masque de cellules solides
