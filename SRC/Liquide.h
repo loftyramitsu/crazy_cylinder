@@ -22,13 +22,14 @@ class Liquide {
 
 		Champ ux, uy, p;
 		Champ ux_star, uy_star;
+		Champ vorticite;
 
 	public:
 		Liquide(int nx, int ny, double lx, double ly, double nu, double rho, double cx, double cy, double radius, double U, double p0)
 			: visc(nu), rho_l(rho),
 			grid(nx, ny, lx, ly, cx, cy, radius),
 			ux(nx, ny), uy(nx, ny),
-			p(nx, ny), ux_star(nx, ny), uy_star(nx, ny)
+			p(nx, ny), ux_star(nx, ny), uy_star(nx, ny), vorticite(nx,ny)
 	{
 		for (int i = 0; i < nx*ny; i++){
 			Site s = p.site_xy(i);
@@ -37,12 +38,14 @@ class Liquide {
 			if(x <= 0 || x >= nx-1 || y <= 0 || y >= ny-1){
 				ux_star[s] = 0.;
 				uy_star[s] = 0.;
+				vorticite[s] = 0.;
 				ux[s] = 0.;
 				uy[s] = U;
 				p[s] = p0;
 			} else {
 				ux_star[s] = 0.;
 				uy_star[s] = 0.;
+				vorticite[s] = 0.;
 				ux[s] = 0.;
 				uy[s] = U;
 				p[s] = p0;
@@ -74,11 +77,18 @@ class Liquide {
 		Champ& Uy_star() { return uy_star; }
 		double& Uy_star(int x, int y) { return uy_star(x, y); }
 
+		Champ& Vort() { return vorticite; }
+		double& Vort(int x, int y) { return vorticite(x, y); }
+
 		const Grille& Grid() const { return grid; }
 
 		// Divergence du champ de vitesse
 		double div_u(int x,int y) const;
 		double div_u_star(int x,int y) const;
+
+		// Rotationnel du champ de vitesse
+
+		double rot_u(int x, int y) const;
 
 		// Terme convectif upwind
 		double convection(const Champ& u, int x, int y) const;
@@ -99,6 +109,9 @@ class Liquide {
 
 		//calcul contribution temps t+dt
 		void Contrib(double dt);
+
+		//calcul vorticité
+		void calc_vort();
 
 	private:
 
