@@ -165,7 +165,9 @@ void Simulation::copyFieldToBuffer() {
 		for (size_t i = 0; i < tab.size(); i++)
 			renderBuffer[i] = (float)(tab[i] - mean);
 		//renderBuffer.assign(tab.begin(), tab.end());
-
+	} else if(champAffiche == "vort"){
+		const auto& tab = fluide.Vort().GetTab();
+		renderBuffer.assign(tab.begin(), tab.end());
 	} else { // u_norm
 		const auto& tabX = fluide.Ux().GetTab();
 		const auto& tabY = fluide.Uy().GetTab();
@@ -232,6 +234,7 @@ void Simulation::simulationLoop(double Tmax, double U, double eps, int maxiter) 
 		fluide.SolveurPression(eps, dt, maxiter);
 		fluide.Contrib(dt);
 		fluide.condi_lim(U);
+		fluide.calc_vort();
 		T += dt;
 
 		// Copie rapide dans le renderBuffer AVEC lock (très court)

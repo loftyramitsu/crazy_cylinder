@@ -27,6 +27,17 @@ double Liquide::div_u_star(int x,int y) const {
 }
 
 /*
+ * vorticite=rot(u) = ∂uy/∂x - ∂ux/∂y
+ * Utilise les gradients centraux
+ */
+
+double Liquide::rot_u(int x, int y) const{
+	double duydx = GradX_c(this->uy, this->grid, x, y);
+	double duxdy = GradY_c(this->ux, this->grid, x ,y);
+	return duydx - duxdy;
+}
+
+/*
  * Terme convectif d'un champ u selon ux, uy (upwind)
  * u peut être ux, uy
  * Retourne ux*dudx + uy*dudy
@@ -61,7 +72,7 @@ void Liquide::calc_ux_star(int x, int y, double dt){
 }
 
 void Liquide::calc_uy_star(int x, int y, double dt){
-	double g = 9.81;
+	double g = 0.;
 
 	double ConvecY=(*this).convection(this->uy,x,y);
 	double DifusY=this->visc*Laplacien(this->uy,this->grid,x,y);
@@ -100,6 +111,16 @@ void Liquide::Contrib(double dt){
 				uy(x,y) = uy_star(x,y) - dpdy * dt / rho_l ;
 			}
 
+		}
+	}
+}
+
+void Liquide::calc_vort() {
+	int nx = this->grid.NX();
+	int ny = this->grid.NY();
+	for(int y=1; y<ny-1; y++){
+		for(int x=1; x<nx-1; x++){
+			this->vorticite(x,y)=(*this).rot_u(x,y);
 		}
 	}
 }
@@ -144,7 +165,7 @@ double Liquide::CFL(){
 
 	newdt=std::min(dt_min_inert, dt_min_visc);
 
-	return 0.99*newdt;
+	return 0.3*newdt;
 }
 
 void Liquide::condi_lim(double U){
@@ -154,13 +175,25 @@ void Liquide::condi_lim(double U){
 		Site s = this->p.site_xy(i);
 		std::vector<bool> S = this->grid.Solide();
 		if(s.x() == 0 || s.x() == nx-1 || s.y() == 0 || s.y() == ny-1){
-			if(s.x()==0 || s.x()== nx-1){
-				this->ux[s]=0.;
+			if(s.x()==0 || s.x()==nx-1){
+    			ux[s] = 0.;
+				uy[s] = 0.;
+			}
+			
+			/*if(s.x()==0){
+    			ux(0,s.y()) = ux(nx-2,s.y());
+			}			
+			if(s.x()==nx-1){
+			    ux(nx-1,s.y()) = ux(1,s.y());
+			}*/
+			if(s.y() == 0){
 				this->uy[s]=U;
 			}
-			if(s.y() == 0 || s.y() == ny-1){
-				this->uy[s]=U;
+			if(s.y()==ny-1){     // sortie
+    			this->uy[s]=U;
 			}
+			
+			
 		}else{
 			if(S[i+1] || S[i-1] || S[i+nx] || S[i-nx]){
 				this->ux[s]=0.;
