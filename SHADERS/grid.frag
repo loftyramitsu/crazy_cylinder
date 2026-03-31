@@ -28,10 +28,10 @@ vec3 RdBu_r(float t) {
 
 	if (t < 0.5) {
 		float u = t / 0.5;
-		return mix(blue, black, u);
+		return mix(blue_dark, white, u);
 	} else {
 		float u = (t - 0.5) / 0.5;
-		return mix(black, red, u);
+		return mix(white, red_dark, u);
 	}
 }
 
@@ -56,5 +56,8 @@ void main()
 	}
 
 	float val = texture(uData, TexCoord).r;
+	// Recentre autour de 0.5 et amplifie les écarts
+	float centered = val - 0.5;
+	float amplified = 0.5 + sign(centered) * pow(abs(centered) * 2.0, 0.6) * 0.5;
 	FragColor = vec4(RdBu_r(val), 1.0);
 }
