@@ -28,10 +28,10 @@ vec3 RdBu_r(float t) {
 
 	if (t < 0.5) {
 		float u = t / 0.5;
-		return mix(blue_dark, white, u);
+		return mix(blue,black, u);
 	} else {
 		float u = (t - 0.5) / 0.5;
-		return mix(white, red_dark, u);
+		return mix(black, red, u);
 	}
 }
 

@@ -16,11 +16,6 @@ class Simulation {
 		Simulation(int width, int height, const std::string& title, Liquide& fluideRef, const std::string& champAffiche);
 		~Simulation();
 
-		// Lance la boucle OpenGL et intègre la simulation physique
-		// Tmax    : temps physique final
-		// U       : vitesse d'entrée (pour condi_lim)
-		// eps     : tolérance solveur pression
-		// maxiter : itérations max solveur pression
 		void run(double Tmax, double U, double eps, int maxiter);
 
 		bool initGL();
@@ -31,11 +26,11 @@ class Simulation {
 		GLFWwindow* my_window;
 		Shader* gridShader;
 		unsigned int quadVAO, quadVBO;
-		unsigned int solidTexture;   // masque solide fixe
-		unsigned int dataTexture;    // champ physique mis à jour
+		unsigned int solidTexture;
+		unsigned int dataTexture;
 
 		Liquide& fluide;
-		std::string champAffiche;    // "ux" | "uy" | "p" | "u_norm"
+		std::string champAffiche;
 
 		void processInput();
 		void render();
@@ -44,12 +39,18 @@ class Simulation {
 		std::atomic<bool> running;
 		std::mutex dataMutex;
 
-
-		// Buffer de rendu séparé (copie légère pour OpenGL)
-		std::vector<float> renderBuffer;  // valeurs à afficher
-		std::atomic<bool> newFrameReady;  // flag : nouvelle donnée dispo
+		std::vector<float> renderBuffer;
+		std::atomic<bool> newFrameReady;
 
 		void simulationLoop(double Tmax, double U, double eps, int maxiter);
-		void copyFieldToBuffer(); 	// Rempli renderBuffer selon champAffiche
+		void copyFieldToBuffer();
 
+		double lastCaptureTime = 0.0;
+		double captureInterval = 1.0 / 30.0;
+		int frameCount = 0;
+		bool recording = true;
+		double simTime = 0.0;
+
+		void captureAllFields();
+		void generateVideos();
 };

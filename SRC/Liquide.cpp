@@ -167,7 +167,7 @@ double Liquide::CFL(){
 
 	return 0.3*newdt;
 }
-
+/*
 void Liquide::condi_lim(double U){
 	int nx = this->grid.NX();
 	int ny = this->grid.NY();
@@ -177,15 +177,14 @@ void Liquide::condi_lim(double U){
 		if(s.x() == 0 || s.x() == nx-1 || s.y() == 0 || s.y() == ny-1){
 			if(s.x()==0 || s.x()==nx-1){
     			ux[s] = 0.;
-				uy[s] = 0.;
 			}
 			
-			/*if(s.x()==0){
-    			ux(0,s.y()) = ux(nx-2,s.y());
-			}			
-			if(s.x()==nx-1){
-			    ux(nx-1,s.y()) = ux(1,s.y());
-			}*/
+			//if(s.x()==0){
+    		//	ux(0,s.y()) = ux(nx-2,s.y());
+			//}			
+			//if(s.x()==nx-1){
+			//    ux(nx-1,s.y()) = ux(1,s.y());
+			//}
 			if(s.y() == 0){
 				this->uy[s]=U;
 			}
@@ -201,4 +200,52 @@ void Liquide::condi_lim(double U){
 			}
 		}
 	}
+}
+ */
+
+void Liquide::condi_lim(double U) {
+    int nx = this->grid.NX();
+    int ny = this->grid.NY();
+    const std::vector<bool>& S = this->grid.Solide();
+
+    for (int i = 0; i < nx*ny; i++) {
+        Site s = this->p.site_xy(i);
+        int x = s.x(), y = s.y();
+
+        // Entrée (bas)
+        if (y == 0) {
+            uy[s] = U;
+            ux[s] = 0.;
+        }
+        // Sortie (haut) — condition convective : le champ sort librement
+        else if (y == ny-1) {
+            uy(x, ny-1) = uy(x, ny-2);
+            ux(x, ny-1) = ux(x, ny-2);
+        }
+        // Parois latérales — glissement : ux=0, uy libre
+        else if (x == 0) {
+            ux[s] = 0.;
+            //uy[s] = uy(1, y);          // Neumann : gradient nul
+			uy[s]=U;
+        }
+        else if (x == nx-1) {
+            ux[s] = 0.;
+            //uy[s] = uy(nx-2, y);       // Neumann : gradient nul
+			uy[s]=U;
+        }
+        // No-slip cylindre
+        else if (S[i+1] || S[i-1] || S[i+nx] || S[i-nx]) {
+            ux[s] = 0.;
+            uy[s] = 0.;
+        }
+    }
+	// Correction débit : la moyenne de uy en sortie doit valoir U
+    double debit_sortie = 0.;
+    for (int x = 0; x < nx; x++)
+        debit_sortie += uy(x, ny-1);
+    debit_sortie /= nx;
+
+    double correction = U - debit_sortie;
+    for (int x = 0; x < nx; x++)
+        uy(x, ny-1) += correction;
 }
