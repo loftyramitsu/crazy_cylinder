@@ -25,4 +25,10 @@ target_link_libraries(Projet
 		OpenMP::OpenMP_CXX
 	)
 
+target_include_directories(Projet
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ../DEP/GLAD/include
+        ../DEP/GLFW/deps        # ← ajouter cette ligne
+	)
 

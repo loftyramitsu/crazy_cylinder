@@ -76,6 +76,9 @@ int main(int argc, char* argv[]) {
 		windowHeight = maxSize;
 		windowWidth  = static_cast<int>(maxSize * lx / ly);
 	}
+	// h264 exige des dimensions paires
+	windowWidth  += windowWidth  % 2;
+	windowHeight += windowHeight % 2;
 
 	// -------------------------------------------------------
 	// Création du fluide et de la simulation
