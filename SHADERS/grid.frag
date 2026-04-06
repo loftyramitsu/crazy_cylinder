@@ -3,8 +3,10 @@
 in vec2 TexCoord;
 out vec4 FragColor;
 
-uniform sampler2D uData;  // texture unit 0 — champ physique normalisé [0,1]
-uniform sampler2D uSolid; // texture unit 1 — masque solide
+uniform sampler2D uData;
+uniform sampler2D uSolid;
+uniform float uGamma;    // gamma correction : < 1 = boost les faibles valeurs
+uniform float uContrast; // contrast [0..4], 1 = neutre
 
 vec3 viridis(float t) {
 	t = clamp(t, 0.0, 1.0);
@@ -17,21 +19,13 @@ vec3 viridis(float t) {
 
 vec3 RdBu_r(float t) {
 	t = clamp(t, 0.0, 1.0);
-
-	vec3 blue_dark  = vec3(0.0196, 0.1882, 0.3804); // bleu foncé
-	vec3 white = vec3(1.0, 1.0, 1.0);
+	vec3 blue  = vec3(0.4, 0.7, 1.0);
 	vec3 black = vec3(0.0, 0.0, 0.0);
-	vec3 red_dark   = vec3(0.4039, 0.0, 0.1216);    // rouge foncé
-
-	vec3 blue  = vec3(0.4, 0.7, 1.0);	// bleu clair
-	vec3 red   = vec3(1.0, 0.45, 0.45);	// rouge clair
-
+	vec3 red   = vec3(1.0, 0.45, 0.45);
 	if (t < 0.5) {
-		float u = t / 0.5;
-		return mix(blue,black, u);
+		return mix(blue, black, t / 0.5);
 	} else {
-		float u = (t - 0.5) / 0.5;
-		return mix(black, red, u);
+		return mix(black, red, (t - 0.5) / 0.5);
 	}
 }
 
@@ -39,7 +33,6 @@ void main()
 {
 	float solid = texture(uSolid, TexCoord).r;
 
-	// Cylindre : intérieur sombre + contour blanc détecté par gradient
 	if (solid > 0.5) {
 		vec2 texel = 1.0 / vec2(textureSize(uSolid, 0));
 		float n = texture(uSolid, TexCoord + vec2( 0.0,  texel.y)).r;
@@ -47,17 +40,26 @@ void main()
 		float e = texture(uSolid, TexCoord + vec2( texel.x,  0.0)).r;
 		float w = texture(uSolid, TexCoord + vec2(-texel.x,  0.0)).r;
 		float bord = abs(n - s) + abs(e - w);
-
 		if (bord > 0.1)
-			FragColor = vec4(1.0, 1.0, 1.0, 1.0);   // contour blanc
+			FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 		else
-			FragColor = vec4(0.12, 0.12, 0.14, 1.0); // intérieur sombre
+			FragColor = vec4(0.12, 0.12, 0.14, 1.0);
 		return;
 	}
 
 	float val = texture(uData, TexCoord).r;
-	// Recentre autour de 0.5 et amplifie les écarts
+
+	// Contraste : amplifie les écarts autour de 0.5
+	val = clamp((val - 0.5) * uContrast + 0.5, 0.0, 1.0);
+
+	// Gamma : boost les faibles valeurs (gamma < 1 = plus lumineux)
+	// On applique le gamma en conservant la symétrie autour de 0.5
 	float centered = val - 0.5;
-	float amplified = 0.5 + sign(centered) * pow(abs(centered) * 2.0, 0.6) * 0.5;
+	float sign_c   = sign(centered);
+	float abs_c    = abs(centered) * 2.0; // [0..1]
+	abs_c = pow(abs_c, uGamma);
+	val = 0.5 + sign_c * abs_c * 0.5;
+	val = clamp(val, 0.0, 1.0);
+
 	FragColor = vec4(RdBu_r(val), 1.0);
 }
