@@ -20,12 +20,14 @@ vec3 viridis(float t) {
 vec3 RdBu_r(float t) {
 	t = clamp(t, 0.0, 1.0);
 	vec3 blue  = vec3(0.4, 0.7, 1.0);
+	vec3 turq  = vec3(0.1, 0.45, 0.45);
 	vec3 black = vec3(0.0, 0.0, 0.0);
 	vec3 red   = vec3(1.0, 0.45, 0.45);
+	vec3 oran  = vec3(0.7, 0.4, 0.2);
 	if (t < 0.5) {
-		return mix(blue, black, t / 0.5);
+		return mix(turq, black, t / 0.5);
 	} else {
-		return mix(black, red, (t - 0.5) / 0.5);
+		return mix(black, oran, (t - 0.5) / 0.5);
 	}
 }
 
