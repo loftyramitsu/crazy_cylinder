@@ -140,6 +140,31 @@ bool Simulation::initGL() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+	// --- Texture lignes pression ---
+	glGenTextures(1, &linesPTexture);
+	glBindTexture(GL_TEXTURE_2D, linesPTexture);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, nx, ny, 0, GL_RED, GL_UNSIGNED_BYTE, emptyTex.data());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// --- Texture lignes vitesse ---
+	glGenTextures(1, &linesVTexture);
+	glBindTexture(GL_TEXTURE_2D, linesVTexture);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, nx, ny, 0, GL_RED, GL_UNSIGNED_BYTE, emptyTex.data());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// --- Lier les samplers ---
+	gridShader->use();
+	glUniform1i(glGetUniformLocation(gridShader->ID, "uLinesP"), 2);
+	glUniform1i(glGetUniformLocation(gridShader->ID, "uLinesV"), 3);
+
 	initUI();
 	return true;
 }
@@ -508,6 +533,33 @@ void Simulation::renderUI() {
 							1.2f, fw, fh, 1.f, recording ? 0.5f : 1.f, recording ? 0.5f : 1.f);
 				}
 
+				curY -= btnH + sectionGap;
+
+				// ══════════════════════════════════════════════════════════════
+				// 7. LIGNES DE CHAMP / NIVEAU
+				// ══════════════════════════════════════════════════════════════
+				curY -= sectionGap;
+				pushText(buf, "VISUALISATION", sliderX0, totalH - curY - 11.f, 1.2f, fw, fh, 0.55f,0.60f,0.70f);
+
+				// Bouton lignes pression (rouge)
+				{float r = showLinesP ? 0.65f : 0.20f;
+				 float g = showLinesP ? 0.10f : 0.20f;
+ 				float b = showLinesP ? 0.10f : 0.20f;
+				 auto [ax,ay]=N(sliderX0, curY-btnH); auto [bx,by]=N(sliderX0+halfW, curY);
+				 pushRect(buf, ax, ay, bx, by, r,g,b, 1.0f);
+				 pushText(buf, "NIV. P", sliderX0 + 4.f, totalH - curY + (btnH * 0.5f) - 5.f,
+				         1.2f, fw, fh, 1.f, 1.f, 1.f);}
+
+				// Bouton lignes vitesse (vert)
+				{float r = showLinesV ? 0.10f : 0.20f;
+				 float g = showLinesV ? 0.55f : 0.20f;
+				 float b = showLinesV ? 0.10f : 0.20f;
+				 auto [ax,ay]=N(sliderX0+halfW+buttonGap, curY-btnH); auto [bx,by]=N(sliderX1, curY);
+				 pushRect(buf, ax, ay, bx, by, r,g,b, 1.0f);
+				 pushText(buf, "CH. V", sliderX0 + halfW + buttonGap + 4.f, totalH - curY + (btnH * 0.5f) - 5.f,
+				         1.2f, fw, fh, 1.f, 1.f, 1.f);}
+				curY -= btnH + sectionGap;
+
 				// Upload et draw
 				glUseProgram(uiShader->ID);
 				glBindVertexArray(uiVAO);
@@ -674,6 +726,23 @@ void Simulation::handleClick(double mx, double my) {
 		}
 		return;
 	}
+
+	curY -= s_btnH + s_sectionGap;
+
+	// ── 7. Lignes de champ / niveau ──
+	curY -= s_sectionGap;
+	float halfW2 = (sliderW - s_buttonGap) / 2.0f;
+	float lY_top = totalH - curY, lY_bot = totalH - (curY - s_btnH);
+	if (my >= lY_top && my <= lY_bot) {
+	    if (mx >= sliderX0 && mx <= sliderX0 + halfW2) {
+	        showLinesP = !showLinesP;
+	        return;
+	    }
+	    if (mx >= sliderX0 + halfW2 + s_buttonGap && mx <= sliderX1) {
+	        showLinesV = !showLinesV;
+	        return;
+	    }
+	}
 }
 
 void Simulation::handleScroll(double dy) {
@@ -732,6 +801,16 @@ void Simulation::copyFieldToBuffer() {
 		for (int i = 0; i < n; i++)
 			renderBuffer[i] = (float)std::sqrt(tabX[i]*tabX[i] + tabY[i]*tabY[i]);
 	}
+	const auto& lp = fluide.Ligne().L_P().GetTab();
+	linesPBuffer.resize(n);
+	for (int i = 0; i < n; i++) linesPBuffer[i] = lp[i] ? 255 : 0;
+
+	const auto& lv = fluide.Ligne().L_V().GetTab();
+	linesVBuffer.resize(n);
+	for (int i = 0; i < n; i++) linesVBuffer[i] = lv[i] ? 255 : 0;
+	int count = 0;
+	for (int i = 0; i < n; i++) if (linesVBuffer[i] > 0) count++;
+	std::cout << "linesV cells: " << count << "\n";
 }
 
 // ─── Rendu principal ──────────────────────────────────────────────────────────
@@ -756,8 +835,13 @@ void Simulation::render() {
 		}
 
 		glBindTexture(GL_TEXTURE_2D, dataTexture);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, nx, ny,
-				GL_RED, GL_UNSIGNED_BYTE, tex.data());
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, nx, ny, GL_RED, GL_UNSIGNED_BYTE, tex.data());
+
+		glBindTexture(GL_TEXTURE_2D, linesPTexture);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, nx, ny, GL_RED, GL_UNSIGNED_BYTE, linesPBuffer.data());
+		glBindTexture(GL_TEXTURE_2D, linesVTexture);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, nx, ny, GL_RED, GL_UNSIGNED_BYTE, linesVBuffer.data());
+
 	}
 
 	int fw, fh;
@@ -776,6 +860,14 @@ void Simulation::render() {
 
 	glUniform1f(glGetUniformLocation(gridShader->ID, "uGamma"),    fv.gamma);
 	glUniform1f(glGetUniformLocation(gridShader->ID, "uContrast"), fv.contrast);
+
+	glUniform1i(glGetUniformLocation(gridShader->ID, "uShowLinesP"), showLinesP ? 1 : 0);
+	glUniform1i(glGetUniformLocation(gridShader->ID, "uShowLinesV"), showLinesV ? 1 : 0);
+
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, linesPTexture);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, linesVTexture);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, dataTexture);
