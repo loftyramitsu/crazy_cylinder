@@ -7,6 +7,127 @@
 
 using namespace Solveur;
 
+std::vector<double> Lignes::tranche_p(Champ& _p) const{
+	int Nx=_p.Taille_hor();
+	int Ny=_p.Taille_vert();
+	std::vector<double> list_p = std::vector<double>(this->N_lignes_pression);
+
+	double pmin=_p(0,0);
+	double pmax=_p(0,0);
+
+	for(int i=1; i<Nx*Ny; i++){
+		Site s = _p.site_xy(i);
+		pmin = std::min(pmin, _p[s]);
+		pmax = std::max(pmax, _p[s]);
+	}
+
+	double delta= pmax-pmin;
+
+	for(int j=1; j<=this->N_lignes_pression ; j++){
+		list_p[j-1]=pmin + delta*j/(1+this->N_lignes_pression);
+	}
+	return list_p;
+}
+
+void Lignes::Update_lp( Champ& _p) {
+	int Nx=this->lignes_p.Taille_hor();
+	int Ny=this->lignes_p.Taille_vert();
+	std::vector<double> liste_p = (*this).tranche_p(_p);
+
+	for(int i=0; i<Nx*Ny; i++){
+		Site s = this->lignes_p.site_xy(i);
+		for(int j=0; j<this->N_lignes_pression; j++){
+			if(_p[s] >= liste_p[j]-this->delta_Pression && _p[s] <= liste_p[j]+this->delta_Pression){
+				this->lignes_p[s] = true;
+			}
+		}
+	}
+}
+
+std::vector<int> Lignes::cases_dep_v( Champ& _uy) const{
+	std::vector<int> list_v;
+	int Nx = _uy.Taille_hor();
+
+	if(Nx%this->N_lignes_vitesse == 0){
+		int quotient = Nx/this->N_lignes_vitesse;
+
+		for(int i=1; i<this->N_lignes_vitesse-1; i++){
+			list_v.push_back(i*quotient);
+		}
+	}else{
+		int quotient = Nx/this->N_lignes_vitesse;
+
+		for(int i=1; i<this->N_lignes_vitesse; i++){
+			list_v.push_back(i*quotient);
+		}
+	}
+
+	return list_v;
+}
+
+void Lignes::Update_lv( Champ& _ux,  Champ& _uy, double _dx, double _dy){
+	int Nx=this->lignes_v.Taille_hor();
+	int Ny=this->lignes_v.Taille_vert();
+
+	std::vector<int> X = (*this).cases_dep_v(_uy);
+	int N = X.size();
+
+	double alpha_lim =_dy/_dx;
+
+	for(int i=0;i<N; i++){
+		int y=0;
+		int x=X[i];
+		this->lignes_v(x,y)=true;
+
+		do{
+			if(_ux(x,y) == 0. && _uy(x,y) == 0.) break;
+			if(_ux(x,y)==0.){
+				if(_uy(x,y)<0.){
+					this->lignes_v(x,y-1) = true;
+					y--;
+				}else{
+					this->lignes_v(x,y+1) = true;
+					y++;
+				}
+			} else if(_ux(x,y)>0.){
+				double alpha = _uy(x,y)/_ux(x,y);
+				if(alpha < -alpha_lim){
+					this->lignes_v(x,y-1) = true;
+					y--;
+				}else if(alpha > alpha_lim){
+					this->lignes_v(x,y+1) = true;
+					y++;
+				} else {
+					this->lignes_v(x+1,y) = true;
+					x++;
+				}
+			} else {
+				double alpha = -_uy(x,y)/_ux(x,y);
+				if(alpha < -alpha_lim){
+					this->lignes_v(x,y-1) = true;
+					y--;
+				}else if(alpha > alpha_lim){
+					this->lignes_v(x,y+1) = true;
+					y++;
+				} else {
+					this->lignes_v(x-1,y) = true;
+					x--;
+				}
+			}
+		}while(x>0 && y>0 && x<Nx-1 && y<Ny-1);
+	}
+}
+
+void Lignes::Reset(){
+	int Nx=this->lignes_p.Taille_hor();
+	int Ny=this->lignes_p.Taille_vert();
+	for(int i=0; i< Nx*Ny; i++){
+		Site s= lignes_p.site_xy(i);
+		lignes_p[s]=false;
+		lignes_v[s]=false;
+	}
+}
+
 /*
  * div(u) = ∂ux/∂x + ∂uy/∂y
  * Utilise les gradients centraux
@@ -248,4 +369,13 @@ void Liquide::condi_lim(double U) {
     double correction = U - debit_sortie;
     for (int x = 0; x < nx; x++)
         uy(x, ny-1) += correction;
+}
+
+void Liquide::lignes_champ_niveau(){
+	this->ligne.Update_lp(this->p);
+	this->ligne.Update_lv(this->ux, this->uy, this->grid.dX(), this->grid.dY());
+}
+
+void Liquide::Reset_lignes(){
+	this->ligne.Reset();
 }

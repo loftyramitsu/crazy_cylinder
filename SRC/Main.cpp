@@ -59,6 +59,12 @@ int main(int argc, char* argv[]) {
 	double eps     = cfg.getDouble("simulation", "eps",     1e-2);
 	int    maxiter = cfg.getInt   ("simulation", "maxiter", 25);
 
+	// Lignes
+
+	double delta_p = cfg.getDouble("lignes", "delta_p", 1e-2);
+	int    Nb_p    = cfg.getInt("lignes",    "Nb_p",    10);
+	int    Nb_v    = cfg.getInt("lignes",    "Nb_p",    6);
+
 	// Export
 	std::string output_dir = cfg.getString("export", "output_dir", "output");
 
@@ -83,7 +89,7 @@ int main(int argc, char* argv[]) {
 	// -------------------------------------------------------
 	// Création du fluide et de la simulation
 	// -------------------------------------------------------
-	Liquide fluide(nx, ny, lx, ly, nu, rho, cx, cy, radius, U, p0);
+	Liquide fluide(nx, ny, lx, ly, nu, rho, cx, cy, radius, U, p0, delta_p, Nb_p, Nb_v);
 	Simulation sim(windowWidth, windowHeight, "Simulation cylindre", fluide, champ);
 
 	// Now, .run() contains the physical loop and the OpenGL loop

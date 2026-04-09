@@ -59,3 +59,40 @@ public:
     double& operator[](Site s);
 };
 
+//champ de booléens
+class Champ_bool {
+private:
+    int nx, ny;             // dimensions
+    std::vector<bool> tab; // stockage 1D
+
+public:
+    // Constructeur
+    Champ_bool(int _nx, int _ny) : nx(_nx), ny(_ny) {
+        tab = std::vector<bool>(_nx * _ny);
+    }
+
+    // Accès au vecteur complet
+    const std::vector<bool>& GetTab() const { return tab; }
+    std::vector<bool>& GetTab() { return tab; }
+
+    // Getters dimension
+    int Taille_hor() const { return nx; }
+    int Taille_vert() const { return ny; }
+
+    // Convertit coordonnées x,y en Site (modulo pour conditions périodiques)
+    Site site_index(int x, int y) const;
+
+    // Convertit un index 1D en Site
+    Site site_xy(int index);
+
+    // Accès à une valeur par coordonnées
+    bool operator()(int x, int y) const;
+    std::vector<bool>::reference operator()(int x, int y);
+
+    // Accès via Site
+    bool operator[](Site s) const;
+    std::vector<bool>::reference operator[](Site s);
+};
+
+
+
