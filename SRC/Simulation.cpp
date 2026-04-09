@@ -807,11 +807,13 @@ void Simulation::simulationLoop(double Tmax, double eps, int maxiter) {
 		if (!running) break;
 
 		double dt = fluide.CFL();
+		fluide.Reset_lignes();
 		fluide.calc_tot_U_star(dt);
 		fluide.SolveurPression(eps, dt, maxiter);
 		fluide.Contrib(dt);
 		fluide.condi_lim(simU);  // utilise la vitesse courante
 		fluide.calc_vort();
+		fluide.lignes_champ_niveau();
 		T += dt;
 		simTime = T;
 
