@@ -79,7 +79,12 @@ void Lignes::Update_lv( Champ& _ux,  Champ& _uy, double _dx, double _dy){
 		int x=X[i];
 		this->lignes_v(x,y)=true;
 
+	
+		int maxSteps = Nx * Ny; // on ne peut pas visiter plus de cellules que ça
+		int steps = 0;
+		/*
 		do{
+			if(steps++ > maxSteps) break;
 			if(_ux(x,y) == 0. && _uy(x,y) == 0.) break;
 			if(_ux(x,y)==0.){
 				if(_uy(x,y)<0.){
@@ -114,7 +119,25 @@ void Lignes::Update_lv( Champ& _ux,  Champ& _uy, double _dx, double _dy){
 					x--;
 				}
 			}
-		}while(x>0 && y>0 && x<Nx-1 && y<Ny-1);
+		}while(x>0 && y>0 && x<Nx-1 && y<Ny-1);*/
+		double fx = x, fy = y;  // position en flottant
+
+		do {
+		    if (steps++ > maxSteps) break;
+		    double u = _ux((int)fx, (int)fy);
+		    double v = _uy((int)fx, (int)fy);
+		    double speed = std::sqrt(u*u + v*v);
+ 		   if (speed < 1e-10) break;
+
+		    // avance d'un pas normalisé
+		    fx += u / speed;
+		    fy += v / speed;
+
+		    int ix = (int)fx, iy = (int)fy;
+		    if (ix <= 0 || iy <= 0 || ix >= Nx-1 || iy >= Ny-1) break;
+		    this->lignes_v(ix, iy) = true;
+
+		} while (true);
 	}
 }
 

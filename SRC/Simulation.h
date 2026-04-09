@@ -42,6 +42,12 @@ class Simulation {
 		// Largeur du panneau de contrôle (pixels)
 		static constexpr int PANEL_W = 260;
 
+		// Lignes de champ et pression
+		unsigned int linesPTexture, linesVTexture;
+		bool showLinesP = false;
+		bool showLinesV = false;
+		std::vector<unsigned char> linesPBuffer, linesVBuffer;
+
 		// --- Thread simulation ---
 		std::thread simThread;
 		std::atomic<bool> running;

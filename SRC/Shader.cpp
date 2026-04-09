@@ -18,27 +18,39 @@ static std::string readFile(const std::string& path)
 
 Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
 {
-	std::string vCode = readFile(vertexPath);
-	std::string fCode = readFile(fragmentPath);
+    std::string vCode = readFile(vertexPath);
+    std::string fCode = readFile(fragmentPath);
 
-	const char* vShaderCode = vCode.c_str();
-	const char* fShaderCode = fCode.c_str();
+    const char* vShaderCode = vCode.c_str();
+    const char* fShaderCode = fCode.c_str();
 
-	unsigned int vertex = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex, 1, &vShaderCode, nullptr);
-	glCompileShader(vertex);
+    int success; char log[512];
 
-	unsigned int fragment = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment, 1, &fShaderCode, nullptr);
-	glCompileShader(fragment);
+    unsigned int vertex = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertex, 1, &vShaderCode, nullptr);
+    glCompileShader(vertex);
+    glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(vertex, 512, nullptr, log);
+        std::cerr << "[VERT ERROR] " << log << "\n";
+    }
 
-	ID = glCreateProgram();
-	glAttachShader(ID, vertex);
-	glAttachShader(ID, fragment);
-	glLinkProgram(ID);
+    unsigned int fragment = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragment, 1, &fShaderCode, nullptr);
+    glCompileShader(fragment);
+    glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(fragment, 512, nullptr, log);
+        std::cerr << "[FRAG ERROR] " << log << "\n";
+    }
 
-	glDeleteShader(vertex);
-	glDeleteShader(fragment);
+    ID = glCreateProgram();
+    glAttachShader(ID, vertex);
+    glAttachShader(ID, fragment);
+    glLinkProgram(ID);
+
+    glDeleteShader(vertex);
+    glDeleteShader(fragment);
 }
 
 void Shader::use() const
