@@ -402,3 +402,84 @@ void Liquide::lignes_champ_niveau(){
 void Liquide::Reset_lignes(){
 	this->ligne.Reset();
 }
+
+void Liquide::calc_deform(){
+	int nx = this->grid.NX();
+	int ny = this->grid.NY();
+	double duxdx, duxdy, duydx, duydy;
+	for(int x=0; x<nx; x++){
+		for(int y=0; y<ny; y++){
+			if (x == 0){
+				duxdx = GradX_avant(this->ux,this->grid,x,y);
+				duydx = GradX_avant(this->uy,this->grid,x,y);
+			} else if (x == nx-1){
+				duxdx = GradX_arriere(this->ux,this->grid,x,y);
+				duydx = GradX_arriere(this->uy,this->grid,x,y);
+			} else {
+				duxdx = GradX_c(this->ux,this->grid,x,y);
+				duydx = GradX_c(this->uy,this->grid,x,y);
+			}
+
+			if (y == 0){
+				duxdy = GradY_avant(this->ux,this->grid,x,y);
+				duydy = GradY_avant(this->uy,this->grid,x,y);
+			} else if (y == ny-1){
+				duxdy = GradY_arriere(this->ux,this->grid,x,y);
+				duydy = GradY_arriere(this->uy,this->grid,x,y);
+			} else {
+				duxdy = GradY_c(this->ux,this->grid,x,y);
+				duydy = GradY_c(this->uy,this->grid,x,y);
+			}
+
+			this->tenseur_deform[0](x,y) = duxdx;
+			this->tenseur_deform[1](x,y) = duydy;
+			this->tenseur_deform[2](x,y) = (duxdy+duydx)/2.;
+		}
+	}
+}
+
+void Liquide::calc_force(double* Fx, double* Fy) const{
+	int nx = this->grid.NX();
+	int ny = this->grid.NY();
+	double dx = this->grid.dX();
+	double dy = this->grid.dY();
+
+	double sigma_xx, sigma_yy, sigma_xy, p, eta;
+	int ni, nj;
+
+	*Fx = 0.;
+	*Fy = 0.;
+
+	for(int x=1; x<nx-2;x++){
+		for(int y=1; y<ny-2; y++){
+
+			int index = x + y*nx;
+
+			if (this->grid.Solide()[index]) continue;
+
+			p = this->p(x,y);
+			eta = this->visc*this->rho_l;
+			sigma_xx = -p + 2*eta*this->tenseur_deform[0](x,y);
+			sigma_yy = -p + 2*eta*this->tenseur_deform[1](x,y);
+			sigma_xy = 2*eta*this->tenseur_deform[2](x,y);
+
+			if (this->grid.Solide()[index+1]){
+				*Fx += sigma_xx*dy;
+				*Fy += sigma_xy*dy;
+			}
+			if (this->grid.Solide()[index-1]){
+				*Fx -= sigma_xx*dy;
+				*Fy -= sigma_xy*dy;
+			}
+			if (this->grid.Solide()[index+nx]){
+				*Fx += sigma_xy*dx;
+				*Fy += sigma_yy*dx;
+			}
+			if (this->grid.Solide()[index-nx]){
+				*Fx -= sigma_xy*dx;
+				*Fy -= sigma_yy*dx;
+			}
+			
+		}
+	}
+}

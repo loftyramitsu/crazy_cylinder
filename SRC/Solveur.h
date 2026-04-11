@@ -28,6 +28,18 @@ namespace Solveur {
     // Gradient upwind en Y selon la vitesse uy
     double GradY_upwind(const Champ& tab, const Champ& uy, const Grille& g, int x, int y);
 
+    // Gradient avant selon X
+    double GradX_avant(const Champ& tab, const Grille& g, int x, int y);
+
+    // Gradient avant selon Y
+    double GradY_avant(const Champ& tab, const Grille& g, int x, int y);
+
+    // Gradient arrière selon X
+    double GradX_arriere(const Champ& tab, const Grille& g, int x, int y);
+
+    // Gradient arrière selon Y
+    double GradY_arriere(const Champ& tab, const Grille& g, int x, int y);
+
     //Solveur Poisson via méthode SOR
     void PoissonSOR(Champ& phi, const Champ& rhs, const Grille& grid, double omega, int maxIter, double tol);
 

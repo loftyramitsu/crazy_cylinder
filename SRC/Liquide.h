@@ -64,14 +64,16 @@ class Liquide {
 		Champ ux_star, uy_star;
 		Champ vorticite;
 
+		std::vector<Champ> tenseur_deform;  //tenseur des déformations, dans l'ordre xx, yy, xy
+
 		Lignes ligne;
 
 	public:
-		Liquide(int nx, int ny, double lx, double ly, double nu, double rho, double cx, double cy, double radius, double U, double p0, double dp, int Np, int Nv)
+		Liquide(int nx, int ny, double lx, double ly, double nu, double rho, double rhoc, double cx, double cy, double radius, double U, double p0, double dp, int Np, int Nv)
 			: visc(nu), rho_l(rho),
-			grid(nx, ny, lx, ly, cx, cy, radius),
+			grid(nx, ny, lx, ly, rhoc, cx, cy, radius),
 			ux(nx, ny), uy(nx, ny),
-			p(nx, ny), ux_star(nx, ny), uy_star(nx, ny), vorticite(nx,ny), ligne(nx, ny, dp, Np, Nv)
+			p(nx, ny), ux_star(nx, ny), uy_star(nx, ny), vorticite(nx,ny), tenseur_deform(3, Champ(nx,ny)), ligne(nx, ny, dp, Np, Nv)
 	{
 		for (int i = 0; i < nx*ny; i++){
 			Site s = p.site_xy(i);
@@ -121,6 +123,11 @@ class Liquide {
 
 		Champ& Vort() { return vorticite; }
 		double& Vort(int x, int y) { return vorticite(x, y); }
+
+		std::vector<Champ>& Deform() { return tenseur_deform; }
+
+		Champ& Compo_Deform(int i) { return tenseur_deform[i]; }
+		double& Compo_Deform(int i, int x, int y) { return tenseur_deform[i](x, y); }
 
 		const Grille& Grid() const { return grid; }
 
@@ -173,5 +180,11 @@ class Liquide {
 		//calcul lignes de champs et ligne de niveau
 		void lignes_champ_niveau();
 		void Reset_lignes();
+
+		//calcul du tenseur des déformation
+		void calc_deform();
+
+		//calcul de la force s'exerçant sur le cylindre
+		void calc_force(double* Fx, double* Fy) const;
 };
 

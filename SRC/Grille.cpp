@@ -52,3 +52,32 @@ void Grille::Affiche_cyl(){
 		std::cout<<std::endl;
 	}
 }
+
+void Grille::calc_masse(){
+	int count = 0;
+	double Dx = this->dx;
+	double Dy = this->dy;
+
+	for(int x=0; x<this->Nx; x++){
+		for(int y=0; y<this->Ny; y++){
+			if (this->solide[x +this->Nx*y]) count++;
+		}
+	}
+
+	this->m_c = this->rho_c * count * Dx * Dy;
+}
+
+void Grille::update_posx(double dt, double Fx){
+	double acc_x = Fx/this->m_c;
+	
+	double deltax = (this->vit_x_cyl + acc_x*dt/2)*dt;
+
+	if (pos_x_cyl + radius_cyl + deltax >= Lx - 2*dx || pos_x_cyl - radius_cyl + deltax <= 2*dx){
+		return;
+	} else {
+		this->pos_x_cyl += deltax;
+		this->vit_x_cyl += acc_x*dt;
+	}
+
+	(*this).SetBoolCylindre();
+}

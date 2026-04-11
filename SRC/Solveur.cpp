@@ -39,15 +39,25 @@ namespace Solveur {
 	double GradX_c(const Champ& tab, const Grille& g, int x, int y) {
 		int nx = tab.Taille_hor();
 		double dx = g.dX();
-
 		int index = x + nx*y;
 
-		if (x <= 0 || x >= nx-1 || g.Solide()[index]) return 0.;
-		else {
+		/*
+		if (g.Solide()[index]) return 0.;
+
+		if (x == 0){
+			return (tab(1,y) - tab(0,y))/dx;
+		} else if (x == nx-1){
+			return (tab(nx-1,y) - tab(nx-2,y))/dx;
+			*/
+		if(x == 0 || x == nx-1 || g.Solide()[index]){
+			return 0.;
+		} else {
 			double tx_plus = g.Solide()[index + 1] ? tab(x,y) : tab(x+1, y);
 			double tx_moins = g.Solide()[index - 1] ? tab(x,y) : tab(x-1, y);
 
-			return (tx_plus - tx_moins) / (2*dx);
+			dx = (g.Solide()[index + 1] || g.Solide()[index - 1]) ? dx : 2*dx;
+
+			return (tx_plus - tx_moins) / dx;
 		}
 	}
 
@@ -56,14 +66,26 @@ namespace Solveur {
 		int nx = tab.Taille_hor();
 		int ny = tab.Taille_vert();
 		double dy = g.dY();
+
 		int index = x + y*nx;
 
-		if (y <= 0 || y >= ny-1 || g.Solide()[index]) return 0.;
-		else {
+		/*
+		if (g.Solide()[index]) return 0.;
+
+		if (y == 0){
+			return (tab(x,1) - tab(x,0))/dy;
+		} else if (y == ny-1){
+			return (tab(x,ny-1) - tab(x,ny-2))/dy;
+			*/
+		if( y == 0 || y == ny-1 || g.Solide()[index]){
+			return 0.;
+		} else {
 			double ty_plus = g.Solide()[index + nx] ? tab(x,y) : tab(x, y+1);
 			double ty_moins = g.Solide()[index - nx] ? tab(x,y) : tab(x, y-1);
 
-			return (ty_plus - ty_moins) / (2*dy);
+			dy = (g.Solide()[index + nx] || g.Solide()[index - nx]) ? dy : 2*dy;
+
+			return (ty_plus - ty_moins) / dy;
 		}
 	}
 
@@ -72,13 +94,26 @@ namespace Solveur {
 		int nx = tab.Taille_hor();
 		double dx = g.dX();
 		int index = x + y*nx;
+		double u = ux(x, y);
 
-		if (x <= 0 || x >= nx-1 || g.Solide()[index]) return 0.;
-		else {
+		
+		if (g.Solide()[index]) return 0.;
+
+		if (x == 0){
+			if (u >= 0.) return 0.;
+			else return (tab(1,y) - tab(0,y))/dx;
+		} else if (x == nx-1){
+			if (u <= 0.) return 0.;
+			else return (tab(nx-1,y) - tab(nx-2,y))/dx;
+			
+		/*
+		if(x == 0 || x == nx-1 || g.Solide()[index]){
+			return 0.;
+			*/
+		} else {
 			double tx_plus = g.Solide()[index + 1] ? tab(x,y) : tab(x+1, y);
 			double tx_moins = g.Solide()[index - 1] ? tab(x,y) : tab(x-1, y);
 
-			double u = ux(x, y);
 			if (u >= 0.) return (tab(x, y) - tx_moins) / dx;
 			else return (tx_plus - tab(x, y)) / dx;
 		}
@@ -90,16 +125,66 @@ namespace Solveur {
 		int nx = tab.Taille_hor();
 		double dy = g.dY();
 		int index = x + y*nx;
+		double u = uy(x, y);
 
-		if (y <= 0 || y >= ny-1 || g.Solide()[index]) return 0.;
-		else {
+		
+		if (g.Solide()[index]) return 0.;
+
+		if (y == 0){
+			if (u >= 0.) return 0.;
+			else return (tab(x,1) - tab(x,0))/dy;
+		} else if (y == ny-1){
+			if (u <= 0.) return 0.;
+			else return (tab(x,ny-1) - tab(x,ny-2))/dy;
+			
+		/*
+		if( y == 0 || y == ny-1 || g.Solide()[index]){
+			return 0.;*/
+		} else {
 			double ty_plus = g.Solide()[index + nx] ? tab(x, y) : tab(x, y+1);
 			double ty_moins = g.Solide()[index - nx] ? tab(x,y) : tab(x, y-1);
 
-			double u = uy(x, y);
 			if (u >= 0.) return (tab(x, y) - ty_moins) / dy;
 			else return (ty_plus - tab(x, y)) / dy;
 		}
+	}
+
+	double GradX_avant(const Champ& tab, const Grille& g, int x, int y){
+		int nx = tab.Taille_hor();
+		double dx = g.dX();
+		int index = x + nx*y;
+
+		if (g.Solide()[index] || x == nx-1 || g.Solide()[index+1]) return 0.;
+		else return (tab(x+1,y) - tab(x,y))/dx;
+	}
+
+	double GradY_avant(const Champ& tab, const Grille& g, int x, int y){
+		int ny = tab.Taille_vert();
+		int nx = tab.Taille_hor();
+		double dy = g.dY();
+		int index = x + nx*y;
+
+		if (g.Solide()[index] || y == ny-1 || g.Solide()[index+nx]) return 0.;
+		else return (tab(x,y+1) - tab(x,y))/dy;
+	}
+
+	double GradX_arriere(const Champ& tab, const Grille& g, int x, int y){
+		int nx = tab.Taille_hor();
+		double dx = g.dX();
+		int index = x + nx*y;
+
+		if (g.Solide()[index] || x == 0 || g.Solide()[index-1]) return 0.;
+		else return (tab(x,y) - tab(x-1,y))/dx;
+	}
+
+	double GradY_arriere(const Champ& tab, const Grille& g, int x, int y){
+		int ny = tab.Taille_vert();
+		int nx = tab.Taille_hor();
+		double dy = g.dY();
+		int index = x + nx*y;
+
+		if (g.Solide()[index] || y == 0 || g.Solide()[index-nx]) return 0.;
+		else return (tab(x,y) - tab(x,y-1))/dy;
 	}
 
 	//implémentation solveur SOR (sur relaxation)
@@ -253,7 +338,7 @@ namespace Solveur {
 		Champ res_coarse = Restriction(res);
 
 		// 4. Grille grossière
-		Grille g_coarse(nx/2, ny/2, g.LX(), g.LY(), g.PosXCyl(), g.PosYCyl(), g.RadiusCyl());
+		Grille g_coarse(nx/2, ny/2, g.LX(), g.LY(), g.Rhoc(), g.PosXCyl(), g.PosYCyl(), g.RadiusCyl());
 		Champ err_coarse(nx/2, ny/2); // initialisée à 0
 
 		// 5. Résolution récursive
