@@ -24,6 +24,8 @@ void Grille::SetBoolCylindre() {
 	double r_phys2 = r_phys * r_phys;
 	double r_grid2 = r_grid * r_grid;
 
+	#pragma omp parallel for schedule(static)
+
 	for (int y = 0; y < this->Ny; y++){
 		double ddy_phys = (y + 0.5) * dy - cy_phys;
 		double ddy_grid = y - cy_grid;
@@ -57,6 +59,8 @@ void Grille::calc_masse(){
 	int count = 0;
 	double Dx = this->dx;
 	double Dy = this->dy;
+
+	#pragma omp parallel for collapse(2) schedule(static) reduction(+:count)
 
 	for(int x=0; x<this->Nx; x++){
 		for(int y=0; y<this->Ny; y++){

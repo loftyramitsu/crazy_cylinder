@@ -36,6 +36,7 @@ public:
         tab = std::vector<double>(_nx * _ny);
     }
 
+
     // Accès au vecteur complet
     const std::vector<double>& GetTab() const { return tab; }
     std::vector<double>& GetTab() { return tab; }

@@ -12,20 +12,37 @@ std::vector<double> Lignes::tranche_p(Champ& _p) const{
 	int Ny=_p.Taille_vert();
 	std::vector<double> list_p = std::vector<double>(this->N_lignes_pression);
 
-	double pmin=_p(0,0);
-	double pmax=_p(0,0);
+	double pmin=  _p(0,0);
+	double pmax = _p(0,0);
 
-	for(int i=1; i<Nx*Ny; i++){
-		Site s = _p.site_xy(i);
-		pmin = std::min(pmin, _p[s]);
-		pmax = std::max(pmax, _p[s]);
+int B = 32;
+#pragma omp parallel
+{
+	#pragma omp for schedule(static) reduction(min:pmin) reduction(max:pmax)
+
+	for(int xx=1; xx<Nx; xx += B){
+		for(int yy = 0; yy <Ny; yy += B){
+
+			int y_max = std::min(yy + B, Ny);
+        	int x_max = std::min(xx + B, Nx);
+
+			for(int x = xx; x<x_max; x++){
+				for(int y = yy; y<y_max; y++){
+					pmin = std::min(pmin, _p(x,y));
+					pmax = std::max(pmax, _p(x,y));
+				}
+			}
+		}
 	}
 
 	double delta= pmax-pmin;
 
+	#pragma omp for schedule(static)
+
 	for(int j=1; j<=this->N_lignes_pression ; j++){
 		list_p[j-1]=pmin + delta*j/(1+this->N_lignes_pression);
 	}
+}
 	return list_p;
 }
 
@@ -34,11 +51,21 @@ void Lignes::Update_lp( Champ& _p) {
 	int Ny=this->lignes_p.Taille_vert();
 	std::vector<double> liste_p = (*this).tranche_p(_p);
 
-	for(int i=0; i<Nx*Ny; i++){
-		Site s = this->lignes_p.site_xy(i);
-		for(int j=0; j<this->N_lignes_pression; j++){
-			if(_p[s] >= liste_p[j]-this->delta_Pression && _p[s] <= liste_p[j]+this->delta_Pression){
-				this->lignes_p[s] = true;
+	int B = 32;
+	for(int xx=0; xx<Nx; xx += B){
+		for(int yy = 0; yy <Ny; yy += B){
+
+			int y_max = std::min(yy + B, Ny);
+        	int x_max = std::min(xx + B, Nx);
+
+			for(int x = xx; x<x_max; x++){
+				for(int y = yy; y<y_max; y++){
+					for(int j=0; j<this->N_lignes_pression; j++){
+						if(_p(x,y) >= liste_p[j]-this->delta_Pression && _p(x,y) <= liste_p[j]+this->delta_Pression){
+							this->lignes_p(x,y) = true;
+						}
+					}
+				}
 			}
 		}
 	}
@@ -82,44 +109,7 @@ void Lignes::Update_lv( Champ& _ux,  Champ& _uy, double _dx, double _dy){
 	
 		int maxSteps = Nx * Ny; // on ne peut pas visiter plus de cellules que ça
 		int steps = 0;
-		/*
-		do{
-			if(steps++ > maxSteps) break;
-			if(_ux(x,y) == 0. && _uy(x,y) == 0.) break;
-			if(_ux(x,y)==0.){
-				if(_uy(x,y)<0.){
-					this->lignes_v(x,y-1) = true;
-					y--;
-				}else{
-					this->lignes_v(x,y+1) = true;
-					y++;
-				}
-			} else if(_ux(x,y)>0.){
-				double alpha = _uy(x,y)/_ux(x,y);
-				if(alpha < -alpha_lim){
-					this->lignes_v(x,y-1) = true;
-					y--;
-				}else if(alpha > alpha_lim){
-					this->lignes_v(x,y+1) = true;
-					y++;
-				} else {
-					this->lignes_v(x+1,y) = true;
-					x++;
-				}
-			} else {
-				double alpha = -_uy(x,y)/_ux(x,y);
-				if(alpha < -alpha_lim){
-					this->lignes_v(x,y-1) = true;
-					y--;
-				}else if(alpha > alpha_lim){
-					this->lignes_v(x,y+1) = true;
-					y++;
-				} else {
-					this->lignes_v(x-1,y) = true;
-					x--;
-				}
-			}
-		}while(x>0 && y>0 && x<Nx-1 && y<Ny-1);*/
+		
 		double fx = x, fy = y;  // position en flottant
 
 		do {
@@ -144,10 +134,11 @@ void Lignes::Update_lv( Champ& _ux,  Champ& _uy, double _dx, double _dy){
 void Lignes::Reset(){
 	int Nx=this->lignes_p.Taille_hor();
 	int Ny=this->lignes_p.Taille_vert();
-	for(int i=0; i< Nx*Ny; i++){
-		Site s= lignes_p.site_xy(i);
-		lignes_p[s]=false;
-		lignes_v[s]=false;
+	for(int x=0; x< Nx; x++){
+		for(int y = 0; y < Ny; y++){
+			lignes_p(x,y)=false;
+			lignes_v(x,y)=false;
+		}
 	}
 }
 
@@ -197,6 +188,8 @@ void Liquide::SolveurPression(double eps, double dt, int Maxiter){
 	int ny = this->grid.NY();
 	Champ rhs(nx,ny);
 
+	#pragma omp parallel for collapse(2) schedule(static)
+
 	for(int x = 0; x < nx; x++){
 		for(int y = 0; y < ny; y++){
 			if (this->grid.Solide()[x+y*nx]==false){
@@ -227,13 +220,24 @@ void Liquide::calc_uy_star(int x, int y, double dt){
 void Liquide::calc_tot_U_star(double dt){
 	int nx=(*this).Grid().NX();
 	int ny=(*this).Grid().NY();
-#pragma omp parallel for collapse(2) schedule(static)
-	for(int y=1; y < ny-1; y++){
-		for(int x=1; x < nx-1; x++){
-			if(!grid.Solide()[x+y*nx]){
-				calc_ux_star(x,y,dt);
-				calc_uy_star(x,y,dt);
+
+	int B = 32; // taille bloc
+	#pragma omp parallel for collapse(2) schedule(static)
+
+	for (int yy = 1; yy < ny-1; yy += B){
+    	for (int xx = 1; xx < nx-1; xx += B){
+
+			int y_max = std::min(yy + B, ny-1);
+        	int x_max = std::min(xx + B, nx-1);
+
+			for(int y=yy; y < y_max; y++){
+				for(int x=xx; x < x_max; x++){
+					if(grid.Solide()[x+y*nx]) continue;
+					calc_ux_star(x,y,dt);
+					calc_uy_star(x,y,dt);
+				}
 			}
+
 		}
 	}
 	this -> ux_star(0, 0) = this -> ux(0, 0);
@@ -244,15 +248,27 @@ void Liquide::calc_tot_U_star(double dt){
 
 void Liquide::Contrib(double dt){
 	int nx = grid.NX(), ny = grid.NY();
-#pragma omp parallel for collapse(2) schedule(static)
-	for(int y=1; y < ny-1; y++){
-		for(int x=1; x < nx-1 ; x++){
-			if(!grid.Solide()[x+y*nx]){
-				double dpdx = GradX_c(p, grid,x,y);
-				double dpdy = GradY_c(p, grid,x,y);
+	double coef = dt / rho_l;
 
-				ux(x,y) = ux_star(x,y) - dpdx * dt / rho_l ;
-				uy(x,y) = uy_star(x,y) - dpdy * dt / rho_l ;
+	int B = 32; // taille bloc
+	#pragma omp parallel for collapse(2) schedule(static)
+
+	for (int yy = 1; yy < ny-1; yy += B){
+    	for (int xx = 1; xx < nx-1; xx += B){
+			
+			int y_max = std::min(yy + B, ny-1);
+        	int x_max = std::min(xx + B, nx-1);
+
+			for(int y=yy; y < y_max; y++){
+				for(int x=xx; x < x_max; x++){
+					if(grid.Solide()[x+y*nx]) continue;
+					double dpdx = GradX_c(p, grid,x,y);
+					double dpdy = GradY_c(p, grid,x,y);
+
+					ux(x,y) = ux_star(x,y) - dpdx * coef ;
+					uy(x,y) = uy_star(x,y) - dpdy * coef ;
+					
+				}
 			}
 
 		}
@@ -262,9 +278,23 @@ void Liquide::Contrib(double dt){
 void Liquide::calc_vort() {
 	int nx = this->grid.NX();
 	int ny = this->grid.NY();
-	for(int y=1; y<ny-1; y++){
-		for(int x=1; x<nx-1; x++){
-			this->vorticite(x,y)=(*this).rot_u(x,y);
+
+	int B = 32; // taille bloc
+	#pragma omp parallel for collapse(2) schedule(static)
+
+	for (int yy = 1; yy < ny-1; yy += B){
+    	for (int xx = 1; xx < nx-1; xx += B){
+			
+			int y_max = std::min(yy + B, ny-1);
+        	int x_max = std::min(xx + B, nx-1);
+
+			for(int y=yy; y < y_max; y++){
+				for(int x=xx; x < x_max; x++){
+					this->vorticite(x,y) = (*this).rot_u(x,y);
+					
+				}
+			}
+
 		}
 	}
 }
@@ -273,20 +303,45 @@ double Liquide::vmax(char c) {
 	double v;
 	int nx = this->grid.NX();
 	int ny = this->grid.NY();
+
+	int B = 32;
 	if(c=='x'){
 		v= this->ux(0,0);
-		for(int i=1;i<nx*ny;i++){
-			Site s = this->ux.site_xy(i);
-			if (abs(this->ux[s]) >= v) v= this->ux[s];
+
+		#pragma omp parallel for collapse(2) schedule(static) reduction(max:v)
+
+		for(int xx=1; xx<nx; xx += B){
+			for(int yy = 0; yy <ny; yy += B){
+
+				int y_max = std::min(yy + B, ny);
+        		int x_max = std::min(xx + B, nx);
+
+				for(int x = xx; x<x_max; x++){
+					for(int y = yy; y<y_max; y++){
+						v = std::max(v,std::abs(ux(x,y)));
+					}
+				}
+			}
 		}
 	} else if(c=='y'){
 		v= this->uy(0,0);
-		for(int i=1;i<nx*ny;i++){
-			Site s = this->uy.site_xy(i);
-			if (abs(this->uy[s]) >= v) v= this->uy[s];
+
+		#pragma omp parallel for collapse(2) schedule(static) reduction(max:v)
+
+		for(int xx=1; xx<nx; xx += B){
+			for(int yy = 0; yy <ny; yy += B){
+
+				int y_max = std::min(yy + B, ny);
+        		int x_max = std::min(xx + B, nx);
+
+				for(int x = xx; x<x_max; x++){
+					for(int y = yy; y<y_max; y++){
+						v = std::max(v,std::abs(uy(x,y)));
+					}
+				}
+			}
 		}
 	}
-
 	return v;
 }
 
@@ -351,47 +406,68 @@ void Liquide::condi_lim(double U) {
     int nx = this->grid.NX();
     int ny = this->grid.NY();
     const std::vector<bool>& S = this->grid.Solide();
+	double debit_sortie = 0.;
 
-    for (int i = 0; i < nx*ny; i++) {
-        Site s = this->p.site_xy(i);
-        int x = s.x(), y = s.y();
+int B = 32;
+#pragma omp parallel
+{
+	#pragma omp for collapse(2) schedule(static)
 
-        // Entrée (bas)
-        if (y == 0) {
-            uy[s] = U;
-            ux[s] = 0.;
-        }
-        // Sortie (haut) — condition convective : le champ sort librement
-        else if (y == ny-1) {
-            uy(x, ny-1) = uy(x, ny-2);
-            ux(x, ny-1) = ux(x, ny-2);
-        }
-        // Parois latérales — glissement : ux=0, uy libre
-        else if (x == 0) {
-            ux[s] = 0.;
-            //uy[s] = uy(1, y);          // Neumann : gradient nul
-			uy[s]=U;
-        }
-        else if (x == nx-1) {
-            ux[s] = 0.;
-            //uy[s] = uy(nx-2, y);       // Neumann : gradient nul
-			uy[s]=U;
-        }
-        // No-slip cylindre
-        else if (S[i+1] || S[i-1] || S[i+nx] || S[i-nx]) {
-            ux[s] = 0.;
-            uy[s] = 0.;
-        }
-    }
+    for(int xx=0; xx<nx; xx += B){
+		for(int yy = 0; yy <ny; yy += B){
+
+			int y_max = std::min(yy + B, ny);
+        	int x_max = std::min(xx + B, nx);
+
+			for(int x = xx; x<x_max; x++){
+				for(int y = yy; y<y_max; y++){
+
+					int i =x+nx*y;
+        			// Entrée (bas)
+        			if (y == 0) {
+        			    uy(x,y) = U;
+        			    ux(x,y) = 0.;
+        			}
+        			// Sortie (haut) — condition convective : le champ sort librement
+        			else if (y == ny-1) {
+        			    uy(x, ny-1) = uy(x, ny-2);
+        			    ux(x, ny-1) = ux(x, ny-2);
+        			}
+        			// Parois latérales — glissement : ux=0, uy libre
+        			else if (x == 0) {
+        			    ux(x,y) = 0.;
+        			    //uy[s] = uy(1, y);          // Neumann : gradient nul
+						uy(x,y)=U;
+        			}
+        			else if (x == nx-1) {
+        			    ux(x,y) = 0.;
+        			    //uy[s] = uy(nx-2, y);       // Neumann : gradient nul
+						uy(x,y)=U;
+        			}
+        			// No-slip cylindre
+        			else if (S[i+1] || S[i-1] || S[i+nx] || S[i-nx]) {
+        			    ux(x,y) = this->grid.VitXCyl();
+        			    uy(x,y) = this->grid.VitYCyl();
+        			}
+				}
+			}
+    	}
+	}
 	// Correction débit : la moyenne de uy en sortie doit valoir U
-    double debit_sortie = 0.;
+
+	#pragma omp for reduction(+:debit_sortie)
+
     for (int x = 0; x < nx; x++)
         debit_sortie += uy(x, ny-1);
     debit_sortie /= nx;
 
     double correction = U - debit_sortie;
+
+	#pragma omp for schedule(static)
+
     for (int x = 0; x < nx; x++)
         uy(x, ny-1) += correction;
+}
 }
 
 void Liquide::lignes_champ_niveau(){
@@ -407,33 +483,45 @@ void Liquide::calc_deform(){
 	int nx = this->grid.NX();
 	int ny = this->grid.NY();
 	double duxdx, duxdy, duydx, duydy;
-	for(int x=0; x<nx; x++){
-		for(int y=0; y<ny; y++){
-			if (x == 0){
-				duxdx = GradX_avant(this->ux,this->grid,x,y);
-				duydx = GradX_avant(this->uy,this->grid,x,y);
-			} else if (x == nx-1){
-				duxdx = GradX_arriere(this->ux,this->grid,x,y);
-				duydx = GradX_arriere(this->uy,this->grid,x,y);
-			} else {
-				duxdx = GradX_c(this->ux,this->grid,x,y);
-				duydx = GradX_c(this->uy,this->grid,x,y);
-			}
 
-			if (y == 0){
-				duxdy = GradY_avant(this->ux,this->grid,x,y);
-				duydy = GradY_avant(this->uy,this->grid,x,y);
-			} else if (y == ny-1){
-				duxdy = GradY_arriere(this->ux,this->grid,x,y);
-				duydy = GradY_arriere(this->uy,this->grid,x,y);
-			} else {
-				duxdy = GradY_c(this->ux,this->grid,x,y);
-				duydy = GradY_c(this->uy,this->grid,x,y);
-			}
+	int B = 32;
+	#pragma omp parallel for collapse(2) schedule(static)
 
-			this->tenseur_deform[0](x,y) = duxdx;
-			this->tenseur_deform[1](x,y) = duydy;
-			this->tenseur_deform[2](x,y) = (duxdy+duydx)/2.;
+	for (int yy = 1; yy < ny-1; yy += B){
+    	for (int xx = 1; xx < nx-1; xx += B){
+
+        	int y_max = std::min(yy + B, ny-1);
+        	int x_max = std::min(xx + B, nx-1);
+
+			for(int x=xx; x<x_max; x++){
+				for(int y=yy; y<y_max; y++){
+					if (x == 0){
+						duxdx = GradX_avant(this->ux,this->grid,x,y);
+						duydx = GradX_avant(this->uy,this->grid,x,y);
+					} else if (x == nx-1){
+						duxdx = GradX_arriere(this->ux,this->grid,x,y);
+						duydx = GradX_arriere(this->uy,this->grid,x,y);
+					} else {
+						duxdx = GradX_c(this->ux,this->grid,x,y);
+						duydx = GradX_c(this->uy,this->grid,x,y);
+					}
+
+					if (y == 0){
+						duxdy = GradY_avant(this->ux,this->grid,x,y);
+						duydy = GradY_avant(this->uy,this->grid,x,y);
+					} else if (y == ny-1){
+						duxdy = GradY_arriere(this->ux,this->grid,x,y);
+						duydy = GradY_arriere(this->uy,this->grid,x,y);
+					} else {
+						duxdy = GradY_c(this->ux,this->grid,x,y);
+						duydy = GradY_c(this->uy,this->grid,x,y);
+					}
+
+					this->tenseur_deform[0](x,y) = duxdx;
+					this->tenseur_deform[1](x,y) = duydy;
+					this->tenseur_deform[2](x,y) = (duxdy+duydx)/2.;
+				}
+			}
 		}
 	}
 }
@@ -450,36 +538,51 @@ void Liquide::calc_force(double* Fx, double* Fy) const{
 	*Fx = 0.;
 	*Fy = 0.;
 
-	for(int x=1; x<nx-2;x++){
-		for(int y=1; y<ny-2; y++){
+	double fx = 0.;
+	double fy = 0.;
 
-			int index = x + y*nx;
+	int B = 32; // taille bloc
+	#pragma omp parallel for collapse(2) schedule(static) reduction(+:fx) reduction(+:fy)
 
-			if (this->grid.Solide()[index]) continue;
+	for(int xx=1; xx<nx-1;xx+=B){
+		for(int yy=1; yy<ny-1; yy+=B){
 
-			p = this->p(x,y);
-			eta = this->visc*this->rho_l;
-			sigma_xx = -p + 2*eta*this->tenseur_deform[0](x,y);
-			sigma_yy = -p + 2*eta*this->tenseur_deform[1](x,y);
-			sigma_xy = 2*eta*this->tenseur_deform[2](x,y);
+			int y_max = std::min(yy + B, ny-1);
+        	int x_max = std::min(xx + B, nx-1);
 
-			if (this->grid.Solide()[index+1]){
-				*Fx += sigma_xx*dy;
-				*Fy += sigma_xy*dy;
+        	for (int y = yy; y < y_max; y++){
+            	for (int x = xx; x < x_max; x++){
+
+					int index = x + y*nx;
+
+					if (this->grid.Solide()[index]) continue;
+
+					p = this->p(x,y);
+					eta = this->visc*this->rho_l;
+					sigma_xx = -p + 2*eta*this->tenseur_deform[0](x,y);
+					sigma_yy = -p + 2*eta*this->tenseur_deform[1](x,y);
+					sigma_xy = 2*eta*this->tenseur_deform[2](x,y);
+
+					if (this->grid.Solide()[index+1]){
+						fx += sigma_xx*dy;
+						fy += sigma_xy*dy;
+					}
+					if (this->grid.Solide()[index-1]){
+						fx -= sigma_xx*dy;
+						fy -= sigma_xy*dy;
+					}
+					if (this->grid.Solide()[index+nx]){
+						fx += sigma_xy*dx;
+						fy += sigma_yy*dx;
+					}
+					if (this->grid.Solide()[index-nx]){
+						fx -= sigma_xy*dx;
+						fy -= sigma_yy*dx;
+					}
+				}
 			}
-			if (this->grid.Solide()[index-1]){
-				*Fx -= sigma_xx*dy;
-				*Fy -= sigma_xy*dy;
-			}
-			if (this->grid.Solide()[index+nx]){
-				*Fx += sigma_xy*dx;
-				*Fy += sigma_yy*dx;
-			}
-			if (this->grid.Solide()[index-nx]){
-				*Fx -= sigma_xy*dx;
-				*Fy -= sigma_yy*dx;
-			}
-			
 		}
 	}
+	*Fx = fx;
+	*Fy = fy;
 }

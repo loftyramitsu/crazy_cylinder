@@ -798,6 +798,9 @@ void Simulation::copyFieldToBuffer() {
 		const auto& tabX = fluide.Ux().GetTab();
 		const auto& tabY = fluide.Uy().GetTab();
 		renderBuffer.resize(n);
+
+		#pragma omp parallel for schedule(static)
+
 		for (int i = 0; i < n; i++)
 			renderBuffer[i] = (float)std::sqrt(tabX[i]*tabX[i] + tabY[i]*tabY[i]);
 	}
@@ -810,7 +813,6 @@ void Simulation::copyFieldToBuffer() {
 	for (int i = 0; i < n; i++) linesVBuffer[i] = lv[i] ? 255 : 0;
 	int count = 0;
 	for (int i = 0; i < n; i++) if (linesVBuffer[i] > 0) count++;
-	std::cout << "linesV cells: " << count << "\n";
 }
 
 // ─── Rendu principal ──────────────────────────────────────────────────────────
@@ -824,10 +826,16 @@ void Simulation::render() {
 		int n  = nx * ny;
 
 		float vmax_abs = 0.f;
+
+		#pragma omp parallel for schedule(static) reduction(max:vmax_abs)
+
 		for (float v : renderBuffer) vmax_abs = std::max(vmax_abs, std::abs(v));
 		if (vmax_abs < 1e-10f) vmax_abs = 1.0f;
 
 		std::vector<unsigned char> tex(n);
+
+		#pragma omp parallel for schedule(static)
+
 		for (int i = 0; i < n; i++) {
 			float normalized = (renderBuffer[i] + vmax_abs) / (2.f * vmax_abs);
 			normalized = std::max(0.f, std::min(1.f, normalized));
@@ -982,10 +990,16 @@ static std::vector<unsigned char> encodeField(
 {
 	int n = nx * ny;
 	float vmax_abs = 0.f;
+
+	#pragma omp parallel for schedule(static) reduction(max:vmax_abs)
+
 	for (float v : data) vmax_abs = std::max(vmax_abs, std::abs(v));
 	if (vmax_abs < 1e-10f) vmax_abs = 1.0f;
 
 	std::vector<unsigned char> img(n * 3);
+
+	#pragma omp parallel for schedule(static)
+
 	for (int i = 0; i < n; i++) {
 		float val = (data[i] + vmax_abs) / (2.f * vmax_abs);
 		val = std::max(0.f, std::min(1.f, val));
