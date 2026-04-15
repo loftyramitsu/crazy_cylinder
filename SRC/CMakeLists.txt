@@ -32,3 +32,5 @@ target_include_directories(Projet
         ../DEP/GLFW/deps        # ← ajouter cette ligne
 	)
 
+target_compile_options(Projet PRIVATE -O3 -march=native -ffast-math)
+

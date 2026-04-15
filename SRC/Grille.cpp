@@ -1,6 +1,13 @@
 #include <vector>
+#include <math.h>
 #include "Grille.h"
 #include<iostream>
+
+#ifdef _WIN32
+    #include <windows.h>
+#else
+    #include <unistd.h>
+#endif
 
 /*
  * Remplit le tableau "solide" avec true si la cellule est à l'intérieur du cylindre
@@ -40,6 +47,27 @@ void Grille::SetBoolCylindre() {
 			this -> solide_texture[x + y * Nx] = (ddx_grid*ddx_grid + ddy_grid*ddy_grid <= r_grid2) ? 255 : 0;
 		}
 	}
+}
+
+int Grille::detect_cache_L1() {
+#ifdef _WIN32
+    DWORD buffer_size = 0;
+    GetLogicalProcessorInformation(nullptr, &buffer_size);
+    std::vector<SYSTEM_LOGICAL_PROCESSOR_INFORMATION> buffer(
+        buffer_size / sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION));
+    GetLogicalProcessorInformation(buffer.data(), &buffer_size);
+    for (auto& info : buffer) {
+        if (info.Relationship == RelationCache && info.Cache.Level == 1)
+            return info.Cache.Size;
+    }
+    return 32 * 1024;
+#elif defined(__linux__)
+    long size = sysconf(_SC_LEVEL1_DCACHE_SIZE);
+    if (size > 0) return (int)size;
+    return 32 * 1024;
+#else
+    return 32 * 1024;  // valeur par défaut pour macOS et autres
+#endif
 }
 
 void Grille::Affiche_cyl(){
@@ -84,4 +112,14 @@ void Grille::update_posx(double dt, double Fx){
 	}
 
 	(*this).SetBoolCylindre();
+}
+
+int Grille::Taille_Bloc(int nb_doubles, int nb_bools) const {
+    // taille mémoire d'un bloc B x B
+    // nb_doubles champs double + nb_bools champs bool (solide)
+    // B² * (nb_doubles * 8 + nb_bools * 1) <= cache_L1
+    
+    int bytes_per_cell = nb_doubles * sizeof(double) + nb_bools * sizeof(bool);
+    int B = (int)std::sqrt((double)(this->block_size / bytes_per_cell));
+    return std::max(8, B);
 }

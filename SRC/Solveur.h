@@ -44,10 +44,10 @@ namespace Solveur {
     void PoissonSOR(Champ& phi, const Champ& rhs, const Grille& grid, double omega, int maxIter, double tol);
 
     // Restreint un champ fin vers un champ grossier (injection ou moyenne)
-    void Restriction(const Champ& fine, Champ& coarse);
+    void Restriction(const Champ& fine, Champ& coarse, const Grille& g);
 
     // Prolonge un champ grossier vers un champ fin (interpolation bilinéaire)
-    void Prolongation(const Champ& coarse, Champ& fine);
+    void Prolongation(const Champ& coarse, Champ& fine, const Grille& g);
 
     // Calcule le résidu r = rhs - L(phi)
     void Residuel(const Champ& phi, const Champ& rhs, const Grille& g, Champ& res);

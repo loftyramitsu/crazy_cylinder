@@ -193,94 +193,125 @@ namespace Solveur {
 		double dx = g.dX(), dy = g.dY();
 		double coef=2.*(1./(dx*dx) + 1./(dy*dy));
 
-		int B = 32; // taille bloc
-		
+		int B = g.Taille_Bloc(2,1); // taille bloc
+		bool use_parallel = (nx * ny > 1024);
 
 		for(int iter = 0; iter < maxiter; iter++){
-
 			double err = 0.;
-		#pragma omp parallel
-		{
+
+			if(use_parallel){
+			#pragma omp parallel
+			{
 		
-			// Cases rouges (x+y pair)
-        	#pragma omp for collapse(2) schedule(static) reduction(+:err)
-        	for(int xx=1; xx<nx-1; xx+=B){
-        	    for(int yy=1; yy<ny-1; yy+=B){
+				// Cases rouges (x+y pair)
+        		#pragma omp for collapse(2) schedule(static) reduction(+:err)
+        		for(int xx=1; xx<nx-1; xx+=B){
+        		    for(int yy=1; yy<ny-1; yy+=B){
 
-					int y_max = std::min(yy + B, ny-1);
-        			int x_max = std::min(xx + B, nx-1);
+						int y_max = std::min(yy + B, ny-1);
+        				int x_max = std::min(xx + B, nx-1);
 
-        			for (int y = yy; y < y_max; y++){
-            			for (int x = xx; x < x_max; x++){
+        				for (int y = yy; y < y_max; y++){
+            				for (int x = xx; x < x_max; x++){
 
-        	        		if ((x+y)%2 != 0) continue;
-        	        		int index = x + y*nx;
-        	        		if(x <= 0 || x >= nx-1 || y <= 0 || y >= ny-1 || g.Solide()[index]) continue;
+        		        		if ((x+y)%2 != 0) continue;
+        		        		int index = x + y*nx;
+        		        		if(x <= 0 || x >= nx-1 || y <= 0 || y >= ny-1 || g.Solide()[index]) continue;
 
-            	    		double phi_old = phi(x,y);
-                			double px_plus  = g.Solide()[index+1]  ? phi(x,y) : phi(x+1,y);
-    	            		double px_moins = g.Solide()[index-1]  ? phi(x,y) : phi(x-1,y);
-        	        		double py_plus  = g.Solide()[index+nx] ? phi(x,y) : phi(x,y+1);
-            	    		double py_moins = g.Solide()[index-nx] ? phi(x,y) : phi(x,y-1);
+            		    		double phi_old = phi(x,y);
+            	    			double px_plus  = g.Solide()[index+1]  ? phi(x,y) : phi(x+1,y);
+    	    	        		double px_moins = g.Solide()[index-1]  ? phi(x,y) : phi(x-1,y);
+        		        		double py_plus  = g.Solide()[index+nx] ? phi(x,y) : phi(x,y+1);
+            		    		double py_moins = g.Solide()[index-nx] ? phi(x,y) : phi(x,y-1);
 
-            	    		double phi_GS = ((px_plus+px_moins)/(dx*dx) + (py_plus+py_moins)/(dy*dy) - rhs(x,y)) / coef;
+            		    		double phi_GS = ((px_plus+px_moins)/(dx*dx) + (py_plus+py_moins)/(dy*dy) - rhs(x,y)) / coef;
 
-        	    			double phi_new = (1.-omega)*phi_old + omega*phi_GS;
+        		    			double phi_new = (1.-omega)*phi_old + omega*phi_GS;
 
-        	        		phi(x,y) = phi_new;
+        		        		phi(x,y) = phi_new;
 
-        	        		err += std::abs(phi_new - phi_old);
+        		        		err += std::abs(phi_new - phi_old);
+							}
 						}
-					}
+        			}
         		}
-        	}
 
-			// Cases noires (x+y impair)
-        	#pragma omp for collapse(2) schedule(static) reduction(+:err)
-        	for(int xx=1; xx<nx-1; xx+=B){
-        	    for(int yy=1; yy<ny-1; yy+=B){
+				// Cases noires (x+y impair)
+        		#pragma omp for collapse(2) schedule(static) reduction(+:err)
+        		for(int xx=1; xx<nx-1; xx+=B){
+        		    for(int yy=1; yy<ny-1; yy+=B){
 
-					int y_max = std::min(yy + B, ny-1);
-        			int x_max = std::min(xx + B, nx-1);
+						int y_max = std::min(yy + B, ny-1);
+        				int x_max = std::min(xx + B, nx-1);
 
-        			for (int y = yy; y < y_max; y++){
-            			for (int x = xx; x < x_max; x++){
+        				for (int y = yy; y < y_max; y++){
+            				for (int x = xx; x < x_max; x++){
 
-        	        		if ((x+y)%2 != 1) continue;
-        	        		int index = x + y*nx;
-        	        		if(x <= 0 || x >= nx-1 || y <= 0 || y >= ny-1 || g.Solide()[index]) continue;
+        		        		if ((x+y)%2 != 1) continue;
+        		        		int index = x + y*nx;
+        		        		if(x <= 0 || x >= nx-1 || y <= 0 || y >= ny-1 || g.Solide()[index]) continue;
 
-        	        		double phi_old = phi(x,y);
+        		        		double phi_old = phi(x,y);
 
-        	        		double px_plus  = g.Solide()[index+1]  ? phi(x,y) : phi(x+1,y);
-        	        		double px_moins = g.Solide()[index-1]  ? phi(x,y) : phi(x-1,y);
-        	        		double py_plus  = g.Solide()[index+nx] ? phi(x,y) : phi(x,y+1);
-        	        		double py_moins = g.Solide()[index-nx] ? phi(x,y) : phi(x,y-1);
+        		        		double px_plus  = g.Solide()[index+1]  ? phi(x,y) : phi(x+1,y);
+        		        		double px_moins = g.Solide()[index-1]  ? phi(x,y) : phi(x-1,y);
+        		        		double py_plus  = g.Solide()[index+nx] ? phi(x,y) : phi(x,y+1);
+        		        		double py_moins = g.Solide()[index-nx] ? phi(x,y) : phi(x,y-1);
 
-        	        		double phi_GS = ((px_plus+px_moins)/(dx*dx) + (py_plus+py_moins)/(dy*dy) - rhs(x,y)) / coef;
+        		        		double phi_GS = ((px_plus+px_moins)/(dx*dx) + (py_plus+py_moins)/(dy*dy) - rhs(x,y)) / coef;
 
-        	        		double phi_new = (1.-omega)*phi_old + omega*phi_GS;
+        		        		double phi_new = (1.-omega)*phi_old + omega*phi_GS;
 
-        	        		phi(x,y) = phi_new;
+        		        		phi(x,y) = phi_new;
 
-        	        		err += std::abs(phi_new - phi_old);
+        		        		err += std::abs(phi_new - phi_old);
+							}
 						}
-					}
-        	    }
-        	}
-		}
+        		    }
+        		}
+			}
+			} else {
+				for(int xx=1; xx<nx-1; xx+=B){
+        			for(int yy=1; yy<ny-1; yy+=B){
 
-			if(err < tol) return;
+						int y_max = std::min(yy + B, ny-1);
+        				int x_max = std::min(xx + B, nx-1);
+
+        				for (int y = yy; y < y_max; y++){
+            				for (int x = xx; x < x_max; x++){
+
+        			        	int index = x + y*nx;
+        			        	if(x <= 0 || x >= nx-1 || y <= 0 || y >= ny-1 || g.Solide()[index]) continue;
+
+            			    	double phi_old = phi(x,y);
+
+            		    		double px_plus  = g.Solide()[index+1]  ? phi(x,y) : phi(x+1,y);
+    	    		        	double px_moins = g.Solide()[index-1]  ? phi(x,y) : phi(x-1,y);
+        			        	double py_plus  = g.Solide()[index+nx] ? phi(x,y) : phi(x,y+1);
+            			    	double py_moins = g.Solide()[index-nx] ? phi(x,y) : phi(x,y-1);
+            			    	double phi_GS = ((px_plus+px_moins)/(dx*dx) + (py_plus+py_moins)/(dy*dy) - rhs(x,y)) / coef;
+
+        			    		double phi_new = (1.-omega)*phi_old + omega*phi_GS;
+
+        			        	phi(x,y) = phi_new;
+
+        			        	err += std::abs(phi_new - phi_old);
+							}
+						}
+        			}
+        		}
+			}
+		if(err < tol) return;
 		}
 	}
     
-	void Restriction(const Champ& fine, Champ& coarse) {
+	void Restriction(const Champ& fine, Champ& coarse, const Grille& g) {
 		int nx  = fine.Taille_hor()  / 2;
 		int ny  = fine.Taille_vert() / 2;
 		int fnx = fine.Taille_hor();
 		int fny = fine.Taille_vert();
 
-		int B = 32;
+		int B = g.Taille_Bloc(2,0);
 		#pragma omp parallel for collapse(2) schedule(static)
 
 		for (int yy = 0; yy < ny; yy += B){
@@ -317,11 +348,11 @@ namespace Solveur {
 		}
 	}
 
-	void Prolongation(const Champ& coarse, Champ& fine) {
+	void Prolongation(const Champ& coarse, Champ& fine, const Grille& g) {
 		int nx_c = coarse.Taille_hor();
 		int ny_c = coarse.Taille_vert();
 
-	int B = 32; // taille bloc	
+	int B = g.Taille_Bloc(2,0); // taille bloc	
 	#pragma omp parallel
 	{
 		#pragma omp for collapse(2) schedule(static)
@@ -380,7 +411,7 @@ namespace Solveur {
 	void Residuel(const Champ& phi, const Champ& rhs, const Grille& g, Champ& res) {
 		int nx = g.NX(), ny = g.NY();
 
-		int B = 32;
+		int B = g.Taille_Bloc(3,1);
 		#pragma omp parallel for collapse(2) schedule(static)
 
 		for (int yy = 0; yy < ny; yy += B){
@@ -406,7 +437,7 @@ namespace Solveur {
 		int nx = g.NX(), ny = g.NY();
 
 		double omega=1.7; //valeur de convergence optimale
-		int B = 32; // taille bloc
+		int B = g.Taille_Bloc(2,1); // taille bloc
 
 		// Cas de base : grille trop petite, résoudre directement
 		if (niveau >= max_niveaux || nx <= 4 || ny <= 4) {
@@ -423,7 +454,7 @@ namespace Solveur {
 
 		// 3. Restriction du résidu sur grille grossière
 		Champ& res_coarse = res_levels[niveau+1];
-		Restriction(res_local, res_coarse);
+		Restriction(res_local, res_coarse,g);
 
 		// 4. Grille grossière
 		Grille g_coarse(nx/2, ny/2, g.LX(), g.LY(), g.Rhoc(), g.PosXCyl(), g.PosYCyl(), g.RadiusCyl());
@@ -434,7 +465,7 @@ namespace Solveur {
 
 		// 6. Prolongation et correction
 		Champ& err_fine = err_levels[niveau];
-		Prolongation(err_coarse, err_fine);
+		Prolongation(err_coarse, err_fine,g);
 
 		#pragma omp parallel for collapse(2) schedule(static)
 
@@ -463,7 +494,6 @@ namespace Solveur {
 		int Nx=g.NX();
 		int Ny=g.NY();
 		int max_niveaux= int(log2(std::min(Nx,Ny))-2);
-		Champ res(Nx, Ny);
 
 		std::vector<Champ> err_levels;
 		std::vector<Champ> res_levels;
@@ -484,15 +514,23 @@ namespace Solveur {
 			VCycle(phi, rhs, g, 0, max_niveaux, nu1, nu2, res_levels, err_levels);
 
 			// Vérification convergence
-			Residuel(phi, rhs, g, res);
+			Residuel(phi, rhs, g, res_levels[0]);
 			double err = 0.;
 			int nx = g.NX(), ny = g.NY();
 
+			int B = g.Taille_Bloc(1,0);
 			#pragma omp parallel for collapse(2) schedule(static) reduction(max:err)
 
-			for (int y = 0; y < ny; y++)
-				for (int x = 0; x < nx; x++)
-					err = std::max(err, std::abs(res(x, y)));
+			for(int xx = 0; xx < nx; xx += B){
+				for(int yy = 0; yy < ny; yy += B){
+
+					int x_max = std::min(xx + B, nx);
+					int y_max = std::min(yy + B, ny);
+					for (int y = yy; y < y_max; y++)
+						for (int x = xx; x < x_max; x++)
+							err = std::max(err, std::abs(res_levels[0](x, y)));
+				}
+			}
 			std::cout << "V-cycle " << iter+1 << " err = " << err << std::endl;
 			if (err < tol) return;
 		}

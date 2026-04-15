@@ -27,6 +27,8 @@ class Grille {
 		std::vector<bool> solide;  // true si la cellule est dans le cylindre
 		std::vector<unsigned char> solide_texture;
 
+		int block_size;  // taille de bloc de base pour le tiling
+
 		// Initialise le masque "solide" selon le cylindre
 		void SetBoolCylindre();
 
@@ -39,6 +41,7 @@ class Grille {
 			dy = ly / ny;
 			SetBoolCylindre();     // remplit le masque solide
 			calc_masse();          //calcule la masse (linéique) du cylindre
+			block_size = detect_cache_L1();
 		}
 
 		// Getters
@@ -55,6 +58,12 @@ class Grille {
 		double RadiusCyl() const { return radius_cyl; }
 		double Mc() const { return m_c; }
 		double Rhoc() const { return rho_c; }
+
+		//calcule la taille du bloc de base pour le tiling
+		int detect_cache_L1();
+
+		//calcule la taille du bloc optimale pour une boucle for donnée
+		int Taille_Bloc(int nb_double, int nb_bool) const;
 
 		// Accès au masque de cellules solides
 		const std::vector<bool>& Solide() const { return solide; }

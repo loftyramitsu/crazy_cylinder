@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
 
 	double delta_p = cfg.getDouble("lignes", "delta_p", 1e-2);
 	int    Nb_p    = cfg.getInt("lignes",    "Nb_p",    10);
-	int    Nb_v    = cfg.getInt("lignes",    "Nb_p",    6);
+	int    Nb_v    = cfg.getInt("lignes",    "Nb_v",    6);
 
 	// Export
 	std::string output_dir = cfg.getString("export", "output_dir", "output");
@@ -86,6 +86,10 @@ int main(int argc, char* argv[]) {
 	// h264 exige des dimensions paires
 	windowWidth  += windowWidth  % 2;
 	windowHeight += windowHeight % 2;
+
+	Grille g_test(4, 4, 1., 1., 1., 0.5, 0.5, 0.);
+	std::cout << "Cache L1 détecté : " << g_test.detect_cache_L1() / 1024 << " KB\n";
+	std::cout << "B pour 4 doubles + 1 bool : " << g_test.Taille_Bloc(4, 1) << "\n";
 
 	// -------------------------------------------------------
 	// Création du fluide et de la simulation

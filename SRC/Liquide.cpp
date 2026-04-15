@@ -186,15 +186,25 @@ double Liquide::convection(const Champ& u, int x, int y) const {
 void Liquide::SolveurPression(double eps, double dt, int Maxiter){
 	int nx = this->grid.NX();
 	int ny = this->grid.NY();
+	double c = rho_l/dt;
 	Champ rhs(nx,ny);
 
+	int B = this->grid.Taille_Bloc(3,1);
 	#pragma omp parallel for collapse(2) schedule(static)
 
-	for(int x = 0; x < nx; x++){
-		for(int y = 0; y < ny; y++){
-			if (this->grid.Solide()[x+y*nx]==false){
-				rhs(x,y) = (rho_l/dt)*(*this).div_u_star(x,y);
-			} 
+	for(int xx = 0; xx < nx; xx += B){
+		for(int yy = 0; yy < ny; yy += B){
+
+			int y_max = std::min(yy + B, ny);
+        	int x_max = std::min(xx + B, nx);
+
+			for(int x = xx; x < x_max; x++){
+				for(int y = yy; y < y_max; y++){
+					if (this->grid.Solide()[x+y*nx]==false){
+						rhs(x,y) = c*(*this).div_u_star(x,y);
+					} 
+				}
+			}
 		}
 	}
 
@@ -221,7 +231,7 @@ void Liquide::calc_tot_U_star(double dt){
 	int nx=(*this).Grid().NX();
 	int ny=(*this).Grid().NY();
 
-	int B = 32; // taille bloc
+	int B = this->grid.Taille_Bloc(4,1); // taille bloc
 	#pragma omp parallel for collapse(2) schedule(static)
 
 	for (int yy = 1; yy < ny-1; yy += B){
@@ -250,7 +260,7 @@ void Liquide::Contrib(double dt){
 	int nx = grid.NX(), ny = grid.NY();
 	double coef = dt / rho_l;
 
-	int B = 32; // taille bloc
+	int B = this->grid.Taille_Bloc(5,1); // taille bloc
 	#pragma omp parallel for collapse(2) schedule(static)
 
 	for (int yy = 1; yy < ny-1; yy += B){
@@ -279,7 +289,7 @@ void Liquide::calc_vort() {
 	int nx = this->grid.NX();
 	int ny = this->grid.NY();
 
-	int B = 32; // taille bloc
+	int B = this->grid.Taille_Bloc(3,1); // taille bloc
 	#pragma omp parallel for collapse(2) schedule(static)
 
 	for (int yy = 1; yy < ny-1; yy += B){
@@ -304,7 +314,7 @@ double Liquide::vmax(char c) {
 	int nx = this->grid.NX();
 	int ny = this->grid.NY();
 
-	int B = 32;
+	int B = this->grid.Taille_Bloc(1,0);
 	if(c=='x'){
 		v= this->ux(0,0);
 
@@ -408,7 +418,7 @@ void Liquide::condi_lim(double U) {
     const std::vector<bool>& S = this->grid.Solide();
 	double debit_sortie = 0.;
 
-int B = 32;
+int B = this->grid.Taille_Bloc(2,1);
 #pragma omp parallel
 {
 	#pragma omp for collapse(2) schedule(static)
@@ -484,7 +494,7 @@ void Liquide::calc_deform(){
 	int ny = this->grid.NY();
 	double duxdx, duxdy, duydx, duydy;
 
-	int B = 32;
+	int B = this->grid.Taille_Bloc(5,1);
 	#pragma omp parallel for collapse(2) schedule(static)
 
 	for (int yy = 1; yy < ny-1; yy += B){
@@ -541,7 +551,7 @@ void Liquide::calc_force(double* Fx, double* Fy) const{
 	double fx = 0.;
 	double fy = 0.;
 
-	int B = 32; // taille bloc
+	int B = this->grid.Taille_Bloc(4,1); // taille bloc
 	#pragma omp parallel for collapse(2) schedule(static) reduction(+:fx) reduction(+:fy)
 
 	for(int xx=1; xx<nx-1;xx+=B){
